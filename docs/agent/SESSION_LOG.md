@@ -40,3 +40,9 @@
 - **Remote CI:** GitHub Actions runs query after initial push returned total_count=0. This is not a remote pass. Local Windows/Python checks remain the verified evidence; do not claim Ubuntu/Python 3.11 verification without a completed run.
 - **Handoff change:** this entry plus PROJECT_STATE/audit delivery notes and refreshed SHA256 manifest are a documentation-only follow-up commit. Recheck repository integrity/diff/checksums before committing and push normally; no new product work or T001 implementation.
 - **Next:** T001 as recorded in CURRENT_TASK; toolchain prerequisite remains unresolved. All production gates remain closed.
+
+## 2026-11-17 (+07) — T000 remote CI verification
+- **Git observed:** documentation handoff `23aac925aceb418aedb7e9e5b9834b20940fd6b1` pushed normally; remote branch hash matched and working tree was clean. Final 119 SHA256 entries matched.
+- **New evidence:** GitHub Actions runs [44065446574](https://github.com/quangkhai5122/AudioVerse/actions/runs/44065446574) at initial `94fda96` and [44065663346](https://github.com/quangkhai5122/AudioVerse/actions/runs/44065663346) at handoff `23aac92` both completed/success. Inspected backend job 133978570819: setup Python 3.11, install deps, compile, repository integrity, tests and critical Ruff all success. Earlier total_count=0 was an initial snapshot; remote CI is now verified.
+- **Final change:** record CI links/evidence in state/audit/log and refresh manifest; documentation only. Appropriate check: repository integrity, diff and checksum verification. No repeat backend/Flutter work is implied by these documentation updates.
+- **Next:** T001 toolchain/bootstrap/device validation, unchanged. Audit DONE, R1/mobile PARTIAL with tooling prerequisite, commercial release BLOCKED.

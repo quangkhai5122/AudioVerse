@@ -65,6 +65,8 @@ Các lệnh dưới đây chạy từ repository root trên PowerShell, trừ ph
 
 Cảnh báo hiện có: StarletteDeprecationWarning về TestClient/httpx. Không tự đổi thư viện vì test vẫn đạt; xử lý dependency compatibility/pinning trong task phù hợp. Kiểm tra local Python 3.13 không thay cho CI Python 3.11.
 
+**CI xác minh sau push:** [initial 94fda96 / run 44065446574](https://github.com/quangkhai5122/AudioVerse/actions/runs/44065446574) và [handoff 23aac92 / run 44065663346](https://github.com/quangkhai5122/AudioVerse/actions/runs/44065663346) đều completed/success. Backend job Ubuntu/Python 3.11 xác nhận từng bước install deps, compile, repository integrity, tests, Ruff critical đạt. Full Ruff là phép kiểm local riêng; chưa có Flutter CI. Truy vấn đầu tiên trả 0 runs là snapshot trước khi kết quả xuất hiện, không phải kết luận cuối.
+
 **Chưa chạy:** Flutter doctor/pub get/analyze/test/build, Android emulator/thiết bị, iOS/Xcode, browser/audio listening, tải audio qua CDN/weak network, concurrency stress, backup restore, penetration/security scan đầy đủ, AI/TTS thật, payment/store/legal review. Không ghi nhận các phần này là đạt.
 
 ## 5. Findings, debt và giới hạn claim

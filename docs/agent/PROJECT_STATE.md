@@ -18,7 +18,7 @@ Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md). Earlier 
 - Flutter catalog/story/foreground player source and one widget smoke exist. No Android/iOS wrappers or pubspec.lock; analyze/test/build/device playback not executed.
 - Rights JSON checks permissions only; no expiry, territory, evidence validation, authenticated reviewer or revocation workflow.
 - SQLite event history is append-only by application convention. No DB UPDATE/DELETE guard, tamper evidence, replay restore or immutable edition hash is implemented.
-- CI workflow exists for Ubuntu/Python 3.11; local results use Windows/Python 3.13.9. Remote CI results must be recorded separately from local passes.
+- Ubuntu/Python 3.11 CI verified separately: runs 44065446574 (initial 94fda96) and 44065663346 (handoff 23aac92) both completed successfully, including installation, compile, integrity, tests and critical Ruff. Windows/Python 3.13.9 also passes full configured Ruff. See audit/log links; Flutter/browser acceptance is still incomplete.
 
 ## PLANNED — not implemented
 - Real accounts/auth/RBAC; Postgres/migrations; private media authorization; rate limiting, backups and production privacy/security controls.
