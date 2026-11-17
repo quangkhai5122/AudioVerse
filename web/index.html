@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101527">
+  <title>AudioVerse · Interactive Audio Fiction Demo</title>
+  <link rel="stylesheet" href="/web/style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="top"><div class="brand"><span class="mark">◉</span><span>Audio<span class="accent">Verse</span></span></div>
+    <div class="tag">LOCAL DEMO · ORIGINAL STORY</div></header>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">TRUYỆN AUDIO TƯƠNG TÁC · TIẾNG VIỆT</p>
+        <h1>Một câu chuyện.<br><em>Nhiều số phận.</em></h1>
+        <p class="lead">Nghe như một audiobook. Lựa chọn như một người trong cuộc. Mỗi quyết định thay đổi manh mối và kết cục.</p>
+        <p class="warning">Bản thử kỹ thuật: toàn bộ nội dung là nguyên bản, giọng tổng hợp eSpeak minh họa; AI từ xa và thanh toán chưa được bật.</p>
+      </section>
+      <section class="reader" aria-label="Trải nghiệm câu chuyện">
+        <aside class="poster"><div class="poster-inner"><span class="poster-mini">AUDIOVERSE ORIGINAL</span><div class="moon"></div><div class="poster-title">BÊN KIA<br>CÁNH CỬA</div><div class="poster-sub">BÍ ẨN TRẠM PHÁT THANH</div></div></aside>
+        <div class="scene-panel">
+          <p id="hint" class="eyebrow">CHUẨN BỊ TRẢI NGHIỆM</p>
+          <h2 id="scene-title">Bên Kia Cánh Cửa</h2>
+          <p id="scene-text" class="story-text">Nhấn “Bắt đầu” để nghe và bước vào câu chuyện.</p>
+          <ul id="notes" class="notes" aria-label="Những điều đã biết"></ul>
+          <div class="audio-card"><div class="audio-title"><span class="signal">♫</span> Giọng đọc demo · Synthesized locally</div><audio id="player" controls preload="none" aria-label="Trình phát truyện"></audio><div class="mini-note">Audio tạo từ văn bản nguyên bản bằng eSpeak. Bản thương mại sẽ dùng người kể/giọng AI có quyền khai thác.</div></div>
+          <div id="choices" class="choices" aria-label="Các lựa chọn"></div>
+          <div class="buttons"><button id="start" class="primary">Bắt đầu câu chuyện</button><button id="reset" class="secondary" hidden>Chơi lại từ đầu</button></div>
+          <p id="status" role="status"></p>
+        </div>
+      </section>
+      <section class="lower"><div><h3>Hành trình của bạn</h3><p>Lịch sử lựa chọn được lưu trong SQLite demo. Tải lại trang có thể khôi phục phiên chơi trên cùng trình duyệt.</p><ol id="timeline" class="timeline"></ol></div><div><h3>Quy tắc sản phẩm</h3><p>AI không được sửa các sự kiện cốt lõi. Các lựa chọn khóa/mở theo manh mối; yêu cầu lặp không ghi nhận sự kiện hai lần.</p><p class="small">Bản này không có đăng nhập thật, không có thanh toán, không cho phép đưa dữ liệu cá nhân hoặc audio Internet vào.</p></div></section>
+    </main>
+    <footer>AudioVerse · Developer research prototype · <a href="/docs" target="_blank" rel="noopener">API Docs</a></footer>
+  </div>
+  <script src="/web/app.js" defer></script>
+</body>
+</html>

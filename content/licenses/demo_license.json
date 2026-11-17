@@ -1,0 +1,14 @@
+{
+  "id": "original-demo-2026",
+  "content_id": "ben-kia-canh-cua",
+  "type": "originated-for-this-project",
+  "rights_holder": "AudioVerse starter project content owner",
+  "provenance": "Original Vietnamese sample narrative written for this repository; no existing story/audio was adapted or scraped.",
+  "verified_for_demo": true,
+  "permissions": ["stream", "offline", "derivative", "tts"],
+  "denied": ["voice_clone", "training"],
+  "territory": "Demo only; commercial exploitation requires owner rights signoff",
+  "evidence": "Original content in content/demo_story/story.json; synthetic espeak demo mp3",
+  "production_approval": false,
+  "reviewer_note": "Demo-only manifest, NOT an authenticated legal rights chain"
+}

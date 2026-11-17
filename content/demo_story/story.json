@@ -1,0 +1,78 @@
+{
+  "id": "ben-kia-canh-cua",
+  "license_id": "original-demo-2026",
+  "title": "Bên Kia Cánh Cửa",
+  "description": "Truyện kỳ bí tương tác nguyên bản dùng để kiểm thử AudioVerse. Không dựa trên tác phẩm có bản quyền của bên thứ ba.",
+  "genre": "Kỳ bí / Trinh thám",
+  "start_scene": "s0",
+  "world_bible": {
+    "setting": "Một trạm phát thanh bỏ hoang bên bờ sông, một đêm mưa.",
+    "rules": ["Những điều người chơi chọn phải tạo hậu quả.", "Không có siêu nhiên được xác nhận.", "Nhân vật chính tên An; người bạn tên Vy.", "Mọi manh mối đều phải gắn với một sự kiện đã trải qua."],
+    "characters": [{"id": "an", "name": "An", "role": "người điều tra"}, {"id": "vy", "name": "Vy", "role": "người bạn ở bên ngoài"}]
+  },
+  "scenes": {
+    "s0": {
+      "title": "Tín hiệu lúc nửa đêm",
+      "text": "Mưa rơi trên mái tôn trạm phát thanh bỏ hoang. An bước qua cánh cổng sắt. Từ tầng hai, chiếc loa cũ phát ra tiếng đếm ngược: mười, chín, tám. Trên nền đất có một dãy dấu chân ướt dẫn về kho thiết bị. Nhưng đèn hành lang tầng hai vừa sáng lên.",
+      "choices": [
+        {"id": "follow-tracks", "label": "Lần theo dấu chân về kho", "target": "s1", "set_flags": ["saw_tracks"]},
+        {"id": "climb-stairs", "label": "Đi lên tầng hai ngay", "target": "s2", "set_flags": ["heard_countdown"]}
+      ]
+    },
+    "s1": {
+      "title": "Trong kho thiết bị",
+      "text": "Một chiếc máy ghi âm nằm dưới chiếc bàn phủ bụi. Bên cạnh là chùm chìa khóa có thẻ ghi chữ B. Qua ô cửa, An thấy chiếc xe của Vy còn đỗ dưới mưa. Một cuộc gọi lúc này có thể đưa cô ấy vào câu chuyện.",
+      "choices": [
+        {"id": "take-key", "label": "Giữ chìa khóa B", "target": "s3", "set_flags": ["has_key"]},
+        {"id": "call-vy", "label": "Gọi Vy cùng vào kiểm tra", "target": "s3", "set_flags": ["vy_present"]}
+      ]
+    },
+    "s2": {
+      "title": "Hành lang tầng hai",
+      "text": "Bên trong phòng phát sóng, một mẩu giấy bị kẹp dưới cửa: 'Sự thật ở nơi sóng không tới'. Tiếng đếm ngược đã dừng ở số ba. An nghe tiếng ai đó đóng cửa cầu thang phía sau.",
+      "choices": [
+        {"id": "read-note", "label": "Cất mẩu giấy làm manh mối", "target": "s3", "set_flags": ["has_note"]},
+        {"id": "rush-down", "label": "Chạy xuống kiểm tra cửa cầu thang", "target": "s3", "set_flags": ["alarm_triggered"]}
+      ]
+    },
+    "s3": {
+      "title": "Cánh cửa phía dưới",
+      "text": "Một hành lang hẹp dẫn đến phòng lưu trữ dưới tầng hầm. Cửa khóa bằng ổ cơ học cũ. Đối diện là bàn điều khiển vẫn còn điện, nơi người ta có thể kích hoạt một đoạn băng cuối cùng. An phải quyết định sử dụng những gì mình biết.",
+      "conditional_notes": [
+        {"requires": ["has_key"], "text": "An cảm thấy chiếc chìa khóa B trong túi áo."},
+        {"requires": ["vy_present"], "text": "Vy đứng cạnh An, sẵn sàng giúp kiểm tra dấu vết."},
+        {"requires": ["has_note"], "text": "Mẩu giấy gợi ý tìm một nơi sóng vô tuyến không tới."},
+        {"requires": ["alarm_triggered"], "text": "Chuông báo trong phòng điều khiển đã nhấp nháy đỏ."}
+      ],
+      "choices": [
+        {"id": "open-cellar", "label": "Mở cửa tầng hầm bằng chìa khóa B", "target": "s4", "requires": ["has_key"], "set_flags": ["cellar_open"]},
+        {"id": "ask-vy", "label": "Nhờ Vy kiểm tra hệ thống ghi âm", "target": "s5", "requires": ["vy_present"], "set_flags": ["vy_helped"]},
+        {"id": "check-console", "label": "Tự kiểm tra bàn điều khiển", "target": "s6", "set_flags": ["used_console"]},
+        {"id": "follow-note", "label": "Làm theo lời nhắn trên mẩu giấy", "target": "s7", "requires": ["has_note"], "set_flags": ["followed_note"]}
+      ]
+    },
+    "s4": {
+      "title": "Tầng hầm không có sóng",
+      "text": "Chìa khóa B xoay nhẹ. Trong phòng tối, An phát hiện hàng chục cuộn băng ghi âm và một bản khai về việc trạm phát bị đóng cửa. Tên của người đã cắt đường truyền được ghi rõ. An tìm được bằng chứng vật chất trước khi tín hiệu biến mất.",
+      "choices": [{"id": "archive-evidence", "label": "Mang tài liệu ra ánh sáng", "target": "s8", "set_flags": ["evidence_saved"]}]
+    },
+    "s5": {
+      "title": "Giọng nói của Vy",
+      "text": "Vy nhận ra tín hiệu không phát từ chiếc loa cũ mà từ một bộ ghi âm hẹn giờ. Cô tắt bộ đếm, rồi mở được danh sách những người từng làm việc tại trạm. Hai người hiểu rằng những bước chân lúc nãy chỉ là một sự đánh lạc hướng.",
+      "choices": [{"id": "share-discovery", "label": "Cùng Vy đưa danh sách ra ngoài", "target": "s9", "set_flags": ["evidence_shared"]}]
+    },
+    "s6": {
+      "title": "Tập băng không nhãn",
+      "text": "An nhấn phát. Chiếc loa trả lại một giọng nói: 'Nếu cậu đang nghe điều này, ai đó đã thử xóa tên chúng tôi'. Đoạn ghi âm chỉ kéo dài mười hai giây rồi ngắt. An vẫn giữ được một manh mối, nhưng chưa có danh sách người liên quan.",
+      "choices": [{"id": "leave-with-recording", "label": "Mang bản ghi nhớ ra ngoài", "target": "s10", "set_flags": ["recording_saved"]}]
+    },
+    "s7": {
+      "title": "Vùng không tín hiệu",
+      "text": "Theo mẩu giấy, An bước vào một phòng cách âm sau tấm rèm đen. Ở đó là nhật ký trực ca và bản sơ đồ hệ thống phát sóng. Sự cố năm trước không phải tai nạn. An nhận ra ai đã đóng kín căn phòng này.",
+      "choices": [{"id": "take-logbook", "label": "Giữ lại nhật ký trực ca", "target": "s8", "set_flags": ["logbook_saved"]}]
+    },
+    "s8": {"title": "Kết thúc: Hồ sơ còn lại", "text": "Khi trời hửng sáng, An mang những tài liệu tìm được ra khỏi trạm. Vụ việc sẽ không được giải quyết trong một đêm, nhưng sự thật giờ có dấu vết có thể kiểm chứng. Những cái tên bị lãng quên cuối cùng có cơ hội được nhắc tới.", "choices": []},
+    "s9": {"title": "Kết thúc: Nhân chứng thứ hai", "text": "Vy và An trở lại xe với danh sách và bản chép đoạn ghi âm. Hai người so sánh lời khai và xác định được người cần tìm. An biết rằng nếu bước vào trạm một mình, câu chuyện đã kết thúc khác.", "choices": []},
+    "s10": {"title": "Kết thúc: Tín hiệu còn vang", "text": "An rời trạm với đoạn ghi âm mười hai giây. Không ai biết chắc người nói là ai. Bên kia sông, đèn của một trạm phát khác bất ngờ bật sáng. Có lẽ câu chuyện mới chỉ bắt đầu.", "choices": []}
+  }
+}
