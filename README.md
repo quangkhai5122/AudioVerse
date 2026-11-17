@@ -35,7 +35,7 @@ python -m compileall -q backend
 
 Takeover audit on 2026-11-17: **17 backend tests passed** on Windows/Python 3.13.9, with one Starlette/httpx deprecation warning. Repository integrity, compilation, full configured Ruff, JavaScript syntax and loopback HTTP/11-MP3 delivery checks passed. Real browser listening and Flutter analyze/test/native/device validation were not run. See the [current audit](docs/agent/ONBOARDING_AUDIT_20261117.md) for exact evidence; earlier packaging claims are historical.
 
-On the audited workstation, the Windows Store `python` alias and registered `py -3.14` are unusable. A local ignored environment was created with `& 'D:\miniconda3\python.exe' -m venv .venv`; use `.\.venv\Scripts\python.exe -m pytest` and `.\.venv\Scripts\python.exe scripts/check_repo.py`. Other machines should choose an installed Python >=3.11 rather than copying this machine-specific path.
+On the audited workstation, `python` may resolve to the Windows Store alias or base `D:\miniconda3\python.exe` (which lacks FastAPI), and registered `py -3.14` is unusable. A local ignored environment was created with `& 'D:\miniconda3\python.exe' -m venv .venv`; use `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"` (avoids cross-session Windows `%TEMP%`/`.pytest_cache` ACL errors in sandboxed shells) and `.\.venv\Scripts\python.exe scripts/check_repo.py`. Other machines should choose an installed Python >=3.11 rather than copying this machine-specific path.
 
 ## Project navigation
 

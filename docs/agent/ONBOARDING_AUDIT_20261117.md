@@ -74,7 +74,7 @@ Cảnh báo hiện có: StarletteDeprecationWarning về TestClient/httpx. Khôn
 | ID | Mức / loại bằng chứng | Phát hiện và nơi xử lý |
 |---|---|---|
 | A01 | CI gate; chạy tái hiện | 8 E701 trong build_requirements/check_repo/package_release; 7 I001 trong imports. Đã sửa tối thiểu; full Ruff và 17 test đạt |
-| A02 | Environment; thực chạy | Alias Python hỏng và thiếu FastAPI ở base env; giải quyết bằng .venv riêng. Flutter/native validation vẫn BLOCKED (T001) |
+| A02 | Environment; thực chạy | Alias Python hỏng hoặc base Miniconda thiếu FastAPI; giải quyết bằng `.venv` riêng. Khi đổi phiên/sandbox Windows, pytest mặc định bị `WinError 5` ở `%TEMP%\pytest-of-*` và `.pytest_cache\v\cache`; giải quyết bằng `-p no:cacheprovider --basetemp=".venv\pytest_tmp"`. Flutter/native validation vẫn BLOCKED (T001) |
 | A03 | Security; đọc mã | X-Demo-Actor có thể giả, default actor dùng chung, audio public, không rate limit/auth/RBAC. Không public (T003/T004) |
 | A04 | Deployment; đọc mã | Chỉ cấm env != demo; HOST hoặc ASGI CLI vẫn có thể bind public. README trước đó nói quá mức "only binds localhost"; đã sửa claim, chưa thêm enforcement |
 | A05 | Narrative/storage; đọc schema/mã | Event append-only theo API, không trigger/privilege/hash chống sửa; state chưa pin edition; chưa replay/restore. Ghi PARTIAL thay vì immutable tuyệt đối (T003/T009) |
@@ -82,7 +82,7 @@ Cảnh báo hiện có: StarletteDeprecationWarning về TestClient/httpx. Khôn
 | A07 | Mobile recovery; đọc mã, chưa device tái hiện | `_choose` commit server rồi `_load` audio trước khi gán `_run`; audio lỗi có thể giữ version cũ; API không có get-run/reconciliation, timeout, persisted pending key. T001 foreground recovery, T005 lifecycle |
 | A08 | Web errors; đọc mã, chưa browser tái hiện | catch trong choose đặt lỗi rồi render(current) ghi đè status; retry tạo key mới. Không khẳng định offline-safe. Regression test ở task client |
 | A09 | Product gap; đối chiếu PRD | Chưa passive default route, full library/search/resume/background/offline, CMS, auth, payments hoặc AI orchestration. Không gọi prototype là B2C MVP |
-| A10 | Documentation drift; đối chiếu | Start/test docs ghi 14 trong khi suite có 17; sửa. RELEASE_AUDIT cũ là lịch sử packaging. Đồng bộ dependency T003 với T002 và T001 client contract |
+| A10 | Documentation drift; đối chiếu | Start/test docs ghi 14 trong khi suite có 17; sửa. RELEASE_AUDIT cũ là lịch sử packaging. Đồng bộ dependency T003 với T002 và T001 client contract; ngày 2026-11-18 đồng bộ thêm drift giữa BACKLOG và task packets T003/T009/T011/T015/T016 |
 | A11 | Legal/provenance; inventory | Manifest khai báo gốc/eSpeak và production_approval=false; không xác minh hợp đồng thương mại hay tái chứng minh nguồn bằng chất âm. Không có phê duyệt pháp lý/game/voice/store |
 
 ## 6. Thay đổi trong T000

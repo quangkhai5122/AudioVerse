@@ -11,9 +11,9 @@
 | T006 | Narrative AI provider adapters & schema verifier | R2 | PLANNED | T002, narrative eval design | Content rights |
 | T007 | TTS API adapters + benchmark & audio pipeline | R2 | PLANNED | T002 | Voice license |
 | T008 | Authoring CMS and content publishing gate | R2 | PLANNED | T002,T003 | Provenance review |
-| T009 | Story state versioning, branching editor & migrations | R2 | PLANNED | T003 | Narrative QA |
+| T009 | Story state versioning, branching editor & migrations | R2 | PLANNED | T003,T006 | Narrative QA |
 | T010 | Analytics, cost ledger, provider circuit breaker | R2 | PLANNED | T006,T007 | Budget cap |
-| T011 | In-app purchase, entitlement and creator royalties | R3 | BLOCKED | T003,T004, legal review | Payments, compliance |
+| T011 | In-app purchase, entitlement and creator royalties | R3 | BLOCKED | T003,T004,T010, legal review | Payments, compliance |
 | T012 | Security, privacy, app store and VN game/service review | R3 | BLOCKED | T002-T011 | External expert approval |
 | T013 | Beta with authorized stories and curated reviewers | R3 | BLOCKED | T012 | Product release |
 | T014 | Commercial launch reliability/incident drills | R4 | BLOCKED | T013 | Launch readiness |

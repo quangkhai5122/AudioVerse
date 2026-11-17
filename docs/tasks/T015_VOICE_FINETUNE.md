@@ -1,6 +1,6 @@
 # T015 — Voice Finetune
 
-**Stage:** R5  |  **Status:** PLANNED  |  **Dependencies:** T007, explicit voice owner/model/data rights  |  **As of:** 2026-11-17
+**Stage:** R5  |  **Status:** DEFERRED  |  **Dependencies:** T007, explicit voice owner/model/data rights  |  **As of:** 2026-11-18
 
 ## Objective and scope
 Evaluate licensed Vietnamese voice adaptation versus baseline providers with RTF, MOS and cost; do not train on Internet recordings without permission.

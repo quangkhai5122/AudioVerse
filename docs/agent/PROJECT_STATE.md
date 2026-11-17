@@ -1,8 +1,8 @@
 # PROJECT_STATE — Canonical project memory
 
-**Updated:** 2026-11-17 | **Stage:** R0 audited local prototype / R1 not accepted | **Task completed:** T000 onboarding audit
+**Updated:** 2026-11-18 | **Stage:** R0 audited local prototype / R1 not accepted | **Task completed:** T000 onboarding audit (re-verified 2026-11-18)
 
-Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md). Earlier packaging claims in RELEASE_AUDIT are historical, not fresh device/browser evidence.
+Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md) and `SESSION_LOG.md`. Earlier packaging claims in RELEASE_AUDIT are historical, not fresh device/browser evidence.
 
 ## DONE — verified locally, not production acceptance
 - FastAPI catalog/work/run/choice/history API and loopback HTTP/static delivery.
@@ -10,8 +10,8 @@ Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md). Earlier 
 - Deterministic flag/precondition transitions; SQLite transactional run/event writes; choice idempotency, stale-version rejection, malformed-input rejection and demo actor scoping.
 - Illustrative rights action checks deny absent/disabled grants, voice_clone and training. No authenticated legal review is implied.
 - All 11 packaged MP3s return HTTP 200; sample byte range returns 206. File delivery is verified; listening quality is not.
-- T000 documentation/code comparison, environment baseline, standing owner workflow and handoff recorded. Eight E701 formatting issues and seven import-order issues repaired without feature/API changes.
-- Windows Python 3.13.9 isolated `.venv`: **17 tests passed, 1 Starlette/httpx deprecation warning**. Repository check: **11 scenes, 182 requirements**. Compilation, full configured Ruff, JavaScript syntax and pip dependency consistency pass.
+- T000 documentation/code comparison, environment baseline, standing owner workflow and handoff recorded and re-verified on 2026-11-18. Eight E701 formatting issues, seven import-order issues, and minor task-packet/backlog dependency & status drifts (T003, T009, T011, T015, T016) repaired without feature/API changes.
+- Windows Python 3.13.9 isolated `.venv`: **17 tests passed, 1 Starlette/httpx deprecation warning** (using `-p no:cacheprovider --basetemp=".venv\pytest_tmp"` across sandboxed Windows sessions to avoid `%TEMP%`/`.pytest_cache` ACL `WinError 5`). Repository check: **11 scenes, 182 requirements**. Compilation, full configured Ruff, JavaScript syntax, HTTP/11-MP3 smoke and pip dependency consistency pass.
 
 ## PARTIAL — code or limited checks, acceptance incomplete
 - Browser experience: HTML/JS/CSS and HTTP path verified; no real browser/audio listening or automated browser E2E in this session. Choice error text can be overwritten by `render(current)` (static finding).

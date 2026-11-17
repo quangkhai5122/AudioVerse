@@ -3,17 +3,17 @@
 **Next:** T001 — Flutter Bootstrap & Device Validation
 **Implementation:** PLANNED, not started
 **Local execution:** BLOCKED until Flutter/Dart + Android SDK/emulator are available
-**Previous:** T000 onboarding audit DONE; see ONBOARDING_AUDIT_20261117.md
+**Previous:** T000 onboarding audit DONE (re-verified 2026-11-18); see ONBOARDING_AUDIT_20261117.md
 **Authorization:** ordinary local development/commit/push is pre-authorized; deployment/store/content publication is not.
 
 ## Exact next commands (PowerShell, repository root)
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue
 Get-Command flutter,dart,adb -ErrorAction SilentlyContinue
 ```
 
-Read AGENTS/state/backlog/latest log and T001 before editing. If no Flutter SDK is available, obtain/verify a local toolchain during T001 and record exact versions; do not claim native validation. Windows Store `python` is broken here and `py -3.14` points to a missing interpreter. The ignored `.venv` was created with `D:\miniconda3\python.exe` (3.13.9); use its explicit interpreter path.
+Read AGENTS/state/backlog/latest log and T001 before editing. If no Flutter SDK is available, obtain/verify a local toolchain during T001 and record exact versions; do not claim native validation. Base `python` (`D:\miniconda3\python.exe` or Windows Store alias) lacks FastAPI and `py -3.14` points to a missing interpreter. The ignored `.venv` was created with `D:\miniconda3\python.exe` (3.13.9); use its explicit interpreter path, and pass `-p no:cacheprovider --basetemp=".venv\pytest_tmp"` when running pytest across sandboxed Windows sessions to avoid `WinError 5` on `%TEMP%\pytest-of-*` and `.pytest_cache`.
 
 After the SDK is available, from `mobile` run these sequentially, checking each result:
 

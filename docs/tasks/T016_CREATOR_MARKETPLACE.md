@@ -1,6 +1,6 @@
 # T016 — Creator Marketplace
 
-**Stage:** R5  |  **Status:** PLANNED  |  **Dependencies:** T008,T012  |  **As of:** 2026-11-17
+**Stage:** R5  |  **Status:** DEFERRED  |  **Dependencies:** T008,T012  |  **As of:** 2026-11-18
 
 ## Objective and scope
 Consider creator self-service publishing, moderation, reporting/appeals, royalty payouts and content discovery.

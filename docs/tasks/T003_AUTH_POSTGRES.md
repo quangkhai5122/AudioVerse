@@ -1,6 +1,6 @@
 # T003 — Auth Postgres
 
-**Stage:** R1  |  **Status:** PLANNED  |  **Dependencies:** T002 schema  |  **As of:** 2026-11-17
+**Stage:** R1  |  **Status:** PLANNED  |  **Dependencies:** T002 schema; T001 client contract; security review  |  **As of:** 2026-11-18
 
 ## Objective and scope
 Replace demo actor header with production auth, scoped DB identities, SQLAlchemy/Postgres migration and secure run access while preserving demo for local test.
