@@ -29,7 +29,7 @@ DONE chỉ áp dụng phạm vi demo và phép kiểm đã chạy. Register 182 
 ## 3. Môi trường và Git baseline
 - Workspace `D:\Python_Project\AudioVerse`; ban đầu unborn `main`, chưa có commit, tracked files bằng 0; 117 file starter (116 checksum entries + manifest) chưa được track. **116/116 hash khớp trước sửa**.
 - Origin `https://github.com/quangkhai5122/AudioVerse.git`, public; GitHub xác nhận owner/account `quangkhai5122` và push/admin access. `git ls-remote --symref origin` thực sự trả rỗng, exit 0. Không có remote history để ghi đè.
-- Nhánh riêng `codex/t000-onboarding-audit`; không force, merge, xóa nhánh hoặc đổi default branch bằng API. Kết quả commit/push được ghi riêng trong SESSION_LOG sau thao tác.
+- Nhánh `codex/t000-onboarding-audit`; initial commit `94fda967aedb61d7c5e624b58242b9eaf32f651c` push thành công, remote hash khớp. GitHub tự chọn nhánh đầu tiên làm default khi kho rỗng; chưa có ref main. Không force, merge, xóa nhánh hoặc đổi default branch bằng API. SESSION_LOG ghi bằng chứng; commit riêng sau đó chỉ hoàn tất handoff.
 - Git 2.49.0.windows.1; Node 24.11.1; Java 22.0.2. `python` là Windows Store alias không chạy; `py -3.14` đăng ký C:\Python314\python.exe không tồn tại.
 - Python thực tế `D:\miniconda3\python.exe` **3.13.9**; tạo `.venv` riêng, không sửa dependency của môi trường dùng chung. Cài editable dev dependencies theo pyproject thành công sau khi cho phép kết nối mạng cho cài đặt local.
 - Không tìm thấy Flutter/Dart/adb trong PATH; Flutter SDK không có ở các vị trí phổ biến đã kiểm tra; Android SDK không có ở `%LOCALAPPDATA%\Android\Sdk`. Không tìm thấy ffmpeg/ffprobe/espeak/gh/Ruff hệ thống trong PATH; Ruff đã có trong `.venv`. Không tái tạo audio hoặc cài Flutter trong phiên này.

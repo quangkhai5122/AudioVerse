@@ -40,5 +40,5 @@ Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md). Earlier 
 
 ## Git / next task
 - Initial baseline: unborn main, no history/tracked files; 117 starter files including checksum manifest. Origin verified as the empty public `quangkhai5122/AudioVerse` repository with owner push access.
-- Working branch: `codex/t000-onboarding-audit`; standing routine commit/push permission recorded in AGENTS and OWNER_DECISIONS. See SESSION_LOG for the observed commit/push outcome; never infer it from this plan.
+- Initial commit `94fda967aedb61d7c5e624b58242b9eaf32f651c` pushed successfully to `origin/codex/t000-onboarding-audit`; `git ls-remote` matched the hash. GitHub automatically selected this first branch as the empty repository's default; no main ref or default-branch API change was created. Standing routine commit/push permission is in AGENTS and OWNER_DECISIONS. SESSION_LOG records delivery evidence; handoff-only commits may follow.
 - Next: **T001 — Flutter Bootstrap & Device Validation** (not implemented). Resolve SDK availability, then analyze/widget tests, Android debug build and emulator catalog/audio/choice/error validation. Keep T002 rights provenance and T003 security dependencies in backlog.
