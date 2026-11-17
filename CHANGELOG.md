@@ -1,5 +1,11 @@
 # Changelog
 
+## T001 Flutter bootstrap & Android emulator validation — 2026-11-18
+- Installed Flutter 3.50.0 (Dart 3.14.0) and Android SDK/NDK/CMake/Emulator on workstation; generated native `mobile/android` and `mobile/ios` project scaffolding and `pubspec.lock`.
+- Configured debug-only loopback cleartext HTTP (`10.0.2.2`, `127.0.0.1`, `localhost`) via Android debug `network_security_config.xml` without weakening release manifests.
+- Added `SceneAudioController` abstraction, `ApiException`, and `AudioVerseApi.getRun`; fixed `CatalogScreen` `setState` returning `Future` bug; updated `StoryScreen` to commit server run state before audio load, retain pending idempotency key on transport errors, and auto-refresh on HTTP 409.
+- Verified `flutter analyze` (0 issues), 6 deterministic widget tests, `flutter build apk --debug`, and live headless Android 15 (API 35) emulator end-to-end flow (`s0 -> s1 -> s3 -> s4 -> s8`) against local FastAPI backend.
+
 ## T000 onboarding audit — 2026-11-17
 - Verified Windows/Python backend, repository, lint and loopback HTTP/media baseline; retained unrun Flutter/browser/device checks explicitly.
 - Persisted owner-authorized long-term commit/push and handoff protocol; audited roadmap and T001 toolchain prerequisites.

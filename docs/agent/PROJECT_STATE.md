@@ -1,44 +1,46 @@
 # PROJECT_STATE — Canonical project memory
 
-**Updated:** 2026-11-18 | **Stage:** R0 audited local prototype / R1 not accepted | **Task completed:** T000 onboarding audit (re-verified 2026-11-18)
+**Updated:** 2026-11-18 | **Stage:** R1 in progress (T001 Android verified; R1 security/rights pending) | **Task completed:** T001 Flutter Bootstrap & Device Validation
 
-Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md) and `SESSION_LOG.md`. Earlier packaging claims in RELEASE_AUDIT are historical, not fresh device/browser evidence.
+Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md), [T001_FLUTTER_BOOTSTRAP.md](../tasks/T001_FLUTTER_BOOTSTRAP.md), and [SESSION_LOG.md](SESSION_LOG.md).
 
 ## DONE — verified locally, not production acceptance
 - FastAPI catalog/work/run/choice/history API and loopback HTTP/static delivery.
 - Original demo graph: 11 scenes, all authored branches reachable, exactly 3 reachable endings.
 - Deterministic flag/precondition transitions; SQLite transactional run/event writes; choice idempotency, stale-version rejection, malformed-input rejection and demo actor scoping.
 - Illustrative rights action checks deny absent/disabled grants, voice_clone and training. No authenticated legal review is implied.
-- All 11 packaged MP3s return HTTP 200; sample byte range returns 206. File delivery is verified; listening quality is not.
-- T000 documentation/code comparison, environment baseline, standing owner workflow and handoff recorded and re-verified on 2026-11-18. Eight E701 formatting issues, seven import-order issues, and minor task-packet/backlog dependency & status drifts (T003, T009, T011, T015, T016) repaired without feature/API changes.
-- Windows Python 3.13.9 isolated `.venv`: **17 tests passed, 1 Starlette/httpx deprecation warning** (using `-p no:cacheprovider --basetemp=".venv\pytest_tmp"` across sandboxed Windows sessions to avoid `%TEMP%`/`.pytest_cache` ACL `WinError 5`). Repository check: **11 scenes, 182 requirements**. Compilation, full configured Ruff, JavaScript syntax, HTTP/11-MP3 smoke and pip dependency consistency pass.
+- All 11 packaged MP3s return HTTP 200; sample byte range returns 206.
+- Windows Python 3.13.9 isolated `.venv`: **17 tests passed, 1 Starlette/httpx deprecation warning**. Repository check: **11 scenes, 182 requirements**. Compilation, full configured Ruff, JavaScript syntax, HTTP/11-MP3 smoke and pip dependency consistency pass.
+- **T001 Flutter Bootstrap & Android Emulator E2E Validation:**
+  - Installed Flutter `3.50.0` (Dart `3.14.0`) at `D:\flutter` and Android SDK (`platforms;android-35/36`, `build-tools;35.0.0/36.0.0`, `ndk;28.2.13676358`, `cmake;3.22.1`, `emulator` `37.2.13.0`, `platform-tools` `37.0.1`) at `D:\Android\Sdk`.
+  - Generated native `mobile/android` and `mobile/ios` wrappers and `mobile/pubspec.lock`; configured debug-only cleartext HTTP (`10.0.2.2`, `127.0.0.1`, `localhost`) via `mobile/android/app/src/debug/res/xml/network_security_config.xml` without weakening release manifests.
+  - Fixed starter `CatalogScreen` `setState` returning `Future` bug, implemented `SceneAudioController` abstraction, committed-choice before audio-load state update with `"Thử tải lại âm thanh"` recovery, pending `idempotency_key` retention on transport errors, and automatic `409 Conflict` state refresh via `GET /api/v1/runs/{run_id}`.
+  - `flutter analyze` (**0 issues**), `flutter test` (**6/6 widget tests passed**), `flutter build apk --debug` (`app-debug.apk` built), and live headless Android 15 (API 35, `audioverse_api35`) emulator E2E verification (offline error -> retry -> catalog -> `s0 -> s1 -> s3 -> s4 -> s8` + MP3 streaming + SQLite verification) all passed.
 
 ## PARTIAL — code or limited checks, acceptance incomplete
-- Browser experience: HTML/JS/CSS and HTTP path verified; no real browser/audio listening or automated browser E2E in this session. Choice error text can be overwritten by `render(current)` (static finding).
-- Flutter catalog/story/foreground player source and one widget smoke exist. No Android/iOS wrappers or pubspec.lock; analyze/test/build/device playback not executed.
-- Rights JSON checks permissions only; no expiry, territory, evidence validation, authenticated reviewer or revocation workflow.
-- SQLite event history is append-only by application convention. No DB UPDATE/DELETE guard, tamper evidence, replay restore or immutable edition hash is implemented.
-- Ubuntu/Python 3.11 CI verified separately: runs 44065446574 (initial 94fda96) and 44065663346 (handoff 23aac92) both completed successfully, including installation, compile, integrity, tests and critical Ruff. Windows/Python 3.13.9 also passes full configured Ruff. See audit/log links; Flutter/browser acceptance is still incomplete.
+- Browser experience: HTML/JS/CSS and HTTP path verified; no real browser/audio listening or automated browser E2E. Web `choose()` catch block still calls `render(current)` which can overwrite error text.
+- Mobile iOS & background lifecycle: `mobile/ios` wrapper generated, but iOS build/Simulator execution requires macOS/Xcode (unrun on Windows). Persistent cross-restart run/position storage, background audio (`audio_service`), lockscreen controls, and offline downloads remain deferred to `T005`.
+- Rights JSON checks permissions only; no expiry, territory, evidence validation, authenticated reviewer or revocation workflow (`T002` next).
+- SQLite event history is append-only by application convention. No DB UPDATE/DELETE guard, tamper evidence, replay restore or immutable edition hash is implemented (`T003`/`T009`).
+- Ubuntu/Python 3.11 CI verified for backend; Flutter CI job is not yet added to `.github/workflows/ci.yml`.
 
 ## PLANNED — not implemented
-- Real accounts/auth/RBAC; Postgres/migrations; private media authorization; rate limiting, backups and production privacy/security controls.
-- Fixed-audio edition/library management, search, background/offline playback, position sync, passive default route and process/network recovery.
-- Canonical content/rights provenance schema, reviewer/CMS/creator ingestion and licensed human recordings.
-- Narrative planner/writer/validator, provider adapters, generation queue, budgets/cost ledger, production TTS or fine-tuning. Existing AI classes are deterministic/disabled stubs and are not wired into live generation.
-- Payments, store receipts/entitlements, royalty settlement, analytics and commercial operations.
+- Canonical content/rights provenance schema, reviewer/CMS/creator ingestion and licensed human recordings (`T002`, `T008`).
+- Real accounts/auth/RBAC; Postgres/migrations; private media authorization; rate limiting, backups and production privacy/security controls (`T003`, `T004`).
+- Fixed-audio edition/library management, search, background/offline playback, position sync, passive default route and process/network recovery (`T005`, `T009`).
+- Narrative planner/writer/validator, provider adapters, generation queue, budgets/cost ledger, production TTS or fine-tuning (`T006`, `T007`, `T010`, `T015`).
+- Payments, store receipts/entitlements, royalty settlement, analytics and commercial operations (`T011`).
 
 ## BLOCKED
-- T001 execution: Flutter/Dart not in PATH; SDK not found in checked common locations, no adb/emulator available in PATH. Obtain/verify toolchain in the next T001 session. iOS native validation also needs macOS/Xcode.
-- Public/commercial launch: expert Vietnam classification/privacy review, documented per-asset rights/voice approval, security/auth/media foundation, mobile QA and store/payment gates remain unmet. Legal documents were inventoried, not independently legally validated.
+- iOS native compilation/Simulator validation: requires macOS + Xcode hardware environment.
+- Public/commercial launch (`T011`–`T014`): expert Vietnam classification/privacy review, documented per-asset rights/voice approval, security/auth/media foundation, mobile QA and store/payment gates remain unmet.
 
 ## Important verified limitations
 - `X-Demo-Actor` is spoofable and defaults to a shared actor; scoping tests are not real authentication.
-- Loopback is the launcher default, **not an enforced bind restriction**: AUDIOVERSE_HOST or a direct ASGI launcher can expose the demo. Never use a LAN/public bind.
-- Story runs pin only story_id, not immutable edition/version; editing the graph can invalidate existing runs.
-- Clients create new idempotency keys per attempt and lack persisted retry reconciliation. Flutter assigns the new run only after audio loading; a committed choice plus audio failure can leave stale client state. These are static findings, not device reproductions.
-- No real user data, paid AI, third-party audio, deployment or T001 implementation was introduced.
+- Loopback is the launcher default, **not an enforced bind restriction**: `AUDIOVERSE_HOST` or a direct ASGI launcher can expose the demo. Never use a LAN/public bind.
+- Story runs pin only `story_id`, not immutable edition/version; editing the graph can invalidate existing runs.
+- Mobile foreground recovery is now verified for in-memory runs (`T001`), but persistent across-process-death run/key/position recovery remains scoped to `T005`.
 
 ## Git / next task
-- Initial baseline: unborn main, no history/tracked files; 117 starter files including checksum manifest. Origin verified as the empty public `quangkhai5122/AudioVerse` repository with owner push access.
-- Initial commit `94fda967aedb61d7c5e624b58242b9eaf32f651c` pushed successfully to `origin/codex/t000-onboarding-audit`; `git ls-remote` matched the hash. GitHub automatically selected this first branch as the empty repository's default; no main ref or default-branch API change was created. Standing routine commit/push permission is in AGENTS and OWNER_DECISIONS. SESSION_LOG records delivery evidence; handoff-only commits may follow.
-- Next: **T001 — Flutter Bootstrap & Device Validation** (not implemented). Resolve SDK availability, then analyze/widget tests, Android debug build and emulator catalog/audio/choice/error validation. Keep T002 rights provenance and T003 security dependencies in backlog.
+- Active branch for T001: `codex/t001-flutter-bootstrap` (branched from `codex/t000-onboarding-audit` at `7de3e67`).
+- Next: **T002 — Content rights schema, contract and evidence review design** (`READY`). Follow with `T003` (Postgres, migrations, user auth and tenant isolation) and `T004` (Authenticated media streaming).

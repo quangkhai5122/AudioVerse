@@ -75,7 +75,7 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 | ID | Priority | Status | Behavior | Acceptance criterion |
 |---|---|---|---|---|
 | `PLY-01` | P0 | DEMO | Stream a local MP3 with web native controls | Browser plays original demo media |
-| `PLY-02` | P0 | SOURCE | Foreground Flutter MP3 scene player source | Flutter analyze and emulator QA pending |
+| `PLY-02` | P0 | DEMO | Foreground Flutter MP3 scene player source | Flutter analyze widget tests and Android emulator QA passed; iOS requires macOS |
 | `PLY-03` | P1 | PLANNED | Background audio lockscreen media controls | Play pause seek work with screen off on devices |
 | `PLY-04` | P1 | PLANNED | Chapter navigation and auto-next | No skipped or repeated chapters during transition |
 | `PLY-05` | P1 | PLANNED | Playback speed from 0.8x to 2x | Speed consistent after resume |

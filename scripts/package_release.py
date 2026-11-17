@@ -7,13 +7,15 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT.parent
 SUFFIX='2026-11-17'
 EXCLUDED={'.venv','.git','__pycache__','.pytest_cache','.ruff_cache','.dart_tool',
-          'local_data','build','coverage','.idea','.vscode'}
+          '.gradle','.kotlin','ephemeral','Pods','local_data','build','coverage','.idea','.vscode'}
 
 
 def eligible(path:Path)->bool:
     rel=path.relative_to(ROOT)
     return path.is_file() and not any(p in EXCLUDED or p.endswith('.egg-info') for p in rel.parts) \
-        and not rel.name.startswith('.env') and rel.name!='SHA256SUMS.txt' and not rel.name.endswith('.db')
+        and not rel.name.startswith('.env') and not rel.name.startswith('.flutter-plugins') \
+        and rel.name not in {'SHA256SUMS.txt','local.properties','Generated.xcconfig','flutter_export_environment.sh'} \
+        and not rel.name.endswith(('.db','.iml','.lock-shm','.lock-wal'))
 
 
 def checksum(data:bytes)->str:

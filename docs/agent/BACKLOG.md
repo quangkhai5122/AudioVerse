@@ -3,9 +3,9 @@
 | ID | Task | Stage | State | Dependency | Gate |
 |---|---|---|---|---|---|
 | T000 | Repository onboarding/audit and long-term workflow | R0 | DONE | Local audit evidence | Audit; no production acceptance |
-| T001 | Native Flutter build, test and foreground player | R1 | PLANNED; execution BLOCKED | Obtain Flutter/Dart + Android SDK/emulator; not implemented | Device QA |
+| T001 | Native Flutter build, test and foreground player | R1 | DONE (Android; iOS needs macOS) | Flutter 3.50.0 + Android SDK 36/AVD 35 verified | Device QA (Android pass) |
 | T002 | Content rights schema, contract and evidence review design | R1 | READY | None | Legal rights |
-| T003 | Postgres, migrations, user auth and tenant isolation design | R1 | PLANNED | T002 schema; T001 client contract; security review | Security |
+| T003 | Postgres, migrations, user auth and tenant isolation design | R1 | PLANNED | T002 schema; T001 client contract (done); security review | Security |
 | T004 | Authenticated media streaming and signed delivery | R1 | PLANNED | T002,T003 | Rights + security |
 | T005 | Player lifecycle, offline/resume/background plan | R1 | PLANNED | T001,T004 | Platform |
 | T006 | Narrative AI provider adapters & schema verifier | R2 | PLANNED | T002, narrative eval design | Content rights |
