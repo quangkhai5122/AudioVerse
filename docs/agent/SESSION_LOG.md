@@ -126,3 +126,23 @@
 - **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
 - **Risks / unresolved questions:** Relational DB storage of rights grants and authenticated reviewer identity tokens depend on `T003` (Auth & Postgres) and `T008` (Creator CMS).
 - **Task state and next exact action:** `T002` DONE on `main`. Next task: **T003 — Postgres, migrations, user auth and tenant isolation design** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue` followed by `.\.venv\Scripts\python.exe scripts/check_repo.py`.
+
+## 2026-11-18 08:16 +07 — T003 Auth, RBAC, Migrations, Edition Pinning & Replay Recovery
+- **Branch/commit baseline:** `main` at `bd4146fadf11f0ea4941858ff0c2e0e639c6f0f1` (`origin/main`), clean working tree.
+- **Objective and exact files changed:**
+  - Created `backend/audioverse/migrations.py` with versioned migration runner (`schema_migrations`), `editions`, `story_snapshots`, `users`, `device_sessions`, `guest_migrations`, `security_audit_log`, SQLite `BEFORE UPDATE/DELETE` immutability triggers on `events` and `security_audit_log`, and PostgreSQL target DDL with Row-Level Security (`RLS`) policies (`postgres_target_ddl`).
+  - Created `backend/audioverse/auth.py` with scrypt password hashing, HMAC-SHA256 Bearer token signing/verification, device session rotation/revocation, idempotent guest-to-account migration, personal data export, account deletion/anonymization, RBAC enforcement, and hash-chained `security_audit_log`.
+  - Updated `backend/audioverse/storage.py` to apply migrations on `init_db`, pin `edition_id` (`editions`) and `state_checksum` on `runs`, chain `events` with `event_hash`, record `story_snapshots`, and implement `restore_run_from_events` (`INT-08`, `INT-18`).
+  - Updated `backend/audioverse/settings.py` and `backend/audioverse/main.py` with `/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/me/devices`, `/api/v1/me/migrate-guest`, `/api/v1/me/export`, `DELETE /api/v1/me`, `/api/v1/admin/security-audit`, and `POST /api/v1/runs/{run_id}/restore`.
+  - Added 5 comprehensive integration tests in `backend/tests/test_auth_postgres.py`.
+  - Updated `ACC-01`..`ACC-07`, `ACC-10`, `INT-08`, `INT-18`, `SEC-01`, `SEC-02`, `SEC-07`, `SEC-12`, `SEC-14` from `PLANNED` to `DEMO` in `docs/product/requirements.psv` and regenerated `docs/product/FUNCTIONAL_SPEC.md`. Updated `docs/engineering/API.md`, `docs/operations/TEST_STRATEGY.md`, `docs/tasks/T003_AUTH_POSTGRES.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/CURRENT_TASK.md`, `docs/agent/BACKLOG.md`, `CHANGELOG.md`, and `SHA256SUMS.txt`.
+- **Decisions / ADR reference:** Implements ADR-002 (event sourcing + deterministic replay), ADR-004 (modular FastAPI + relational migration path), and ADR-006 (explicit separation of demo header mode vs. authenticated mode).
+- **Tests RUN:**
+  - `.\.venv\Scripts\python.exe -m pytest -v -p no:cacheprovider --basetemp=".venv\pytest_tmp"` => **30 passed, 1 warning**.
+  - `.\.venv\Scripts\python.exe scripts/check_repo.py` => `Integrity PASS: 11 scenes, 182 requirements, assets and agent docs`.
+  - `.\.venv\Scripts\python.exe -m compileall -q backend scripts` => exit 0.
+  - `.\.venv\Scripts\python.exe -m ruff check backend scripts` => `All checks passed!`.
+  - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test` (in `mobile/`) => `No issues found!`, **6 passed**.
+- **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
+- **Risks / unresolved questions:** Media streaming (`/api/v1/audio/{scene_id}.mp3`) still uses unauthenticated sample routes until `T004` adds short-lived signed playback URLs.
+- **Task state and next exact action:** `T003` DONE on `main`. Next task: **T004 — Authenticated media streaming and signed delivery** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue` followed by `.\.venv\Scripts\python.exe scripts/check_repo.py`.

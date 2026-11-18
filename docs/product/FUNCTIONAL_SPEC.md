@@ -30,16 +30,16 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 
 | ID | Priority | Status | Behavior | Acceptance criterion |
 |---|---|---|---|---|
-| `ACC-01` | P0 | PLANNED | Anonymous browse of free catalog | User can view licensed free work without an account |
-| `ACC-02` | P1 | PLANNED | Email/passkey/social login with verified identity | Server binds sessions to the correct user identity |
-| `ACC-03` | P1 | PLANNED | Guest-to-account safe migration | Library and runs migrate exactly once |
-| `ACC-04` | P1 | PLANNED | Session token refresh and revocation | Revoked session can no longer retrieve private data |
-| `ACC-05` | P1 | PLANNED | Device session management | User can revoke individual device sessions |
-| `ACC-06` | P1 | PLANNED | Delete account and personal data request | Deletion and retention audit follow documented policy |
-| `ACC-07` | P1 | PLANNED | Data export for user | Export contains runs and personal preferences only for owner |
+| `ACC-01` | P0 | DEMO | Anonymous browse of free catalog | User can view licensed free work without an account |
+| `ACC-02` | P1 | DEMO | Email/passkey/social login with verified identity | Server binds sessions to the correct user identity |
+| `ACC-03` | P1 | DEMO | Guest-to-account safe migration | Library and runs migrate exactly once |
+| `ACC-04` | P1 | DEMO | Session token refresh and revocation | Revoked session can no longer retrieve private data |
+| `ACC-05` | P1 | DEMO | Device session management | User can revoke individual device sessions |
+| `ACC-06` | P1 | DEMO | Delete account and personal data request | Deletion and retention audit follow documented policy |
+| `ACC-07` | P1 | DEMO | Data export for user | Export contains runs and personal preferences only for owner |
 | `ACC-08` | P2 | PLANNED | Optional age gate and parental controls as required | Applicable age restrictions enforced before content access |
 | `ACC-09` | P1 | PLANNED | Restore accounts without losing paid rights | Store-verified entitlements survive reinstall |
-| `ACC-10` | P1 | PLANNED | Production RBAC for users creators reviewers staff | Role escalation attempts denied and audited |
+| `ACC-10` | P1 | DEMO | Production RBAC for users creators reviewers staff | Role escalation attempts denied and audited |
 
 ## Catalog
 
@@ -104,7 +104,7 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 | `INT-05` | P0 | DEMO | Idempotent replay with immutable result | Repeated key does not create second event |
 | `INT-06` | P0 | DEMO | Reject stale story run versions | Version conflict returns 409 without rewriting history |
 | `INT-07` | P0 | DEMO | Three sample endings with visible divergence | Author graph test reaches three distinct endings |
-| `INT-08` | P1 | PLANNED | Run tied to immutable story edition version | Old run remains valid after new edition publication |
+| `INT-08` | P1 | DEMO | Run tied to immutable story edition version | Old run remains valid after new edition publication |
 | `INT-09` | P1 | PLANNED | Passive authored default at each decision | Listening can continue without mandatory prompts |
 | `INT-10` | P1 | PLANNED | Open-text player actions with constrained intent | LLM output cannot bypass allowed action grammar |
 | `INT-11` | P1 | PLANNED | Meaningful choice consequences beyond text style | State changes are reflected in later gated scenes |
@@ -114,7 +114,7 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 | `INT-15` | P2 | PLANNED | Share safe non-spoiler branch summary | Private run details not published without consent |
 | `INT-16` | P2 | PLANNED | Voice-command input for story choices | ASR privacy and safe disambiguation tested |
 | `INT-17` | P2 | PLANNED | Choice replay and what-if endings | Replay produces new run without changing past records |
-| `INT-18` | P1 | PLANNED | Story state snapshot recovery | Deterministic replay yields identical state after restore |
+| `INT-18` | P1 | DEMO | Story state snapshot recovery | Deterministic replay yields identical state after restore |
 
 ## Narrative AI
 
@@ -238,20 +238,20 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 
 | ID | Priority | Status | Behavior | Acceptance criterion |
 |---|---|---|---|---|
-| `SEC-01` | P0 | PLANNED | Production authentication beyond demo actor | Unauthenticated run access denied |
-| `SEC-02` | P0 | PLANNED | Authorization on every private resource | User A cannot read user B story history |
+| `SEC-01` | P0 | DEMO | Production authentication beyond demo actor | Unauthenticated run access denied |
+| `SEC-02` | P0 | DEMO | Authorization on every private resource | User A cannot read user B story history |
 | `SEC-03` | P0 | PLANNED | HTTPS end to end and secure tokens | No cleartext credentials in production logs |
 | `SEC-04` | P0 | PLANNED | Storage encryption and backups | Secrets and PII protected under tested key policy |
 | `SEC-05` | P0 | PLANNED | Untrusted story text prompt injection boundary | Imported metadata cannot issue system instructions |
 | `SEC-06` | P0 | PLANNED | Data minimization and retention schedule | No unnecessary raw voice recordings retained |
-| `SEC-07` | P1 | PLANNED | Privacy notice and deletion workflow | User consent rights data access actionable |
+| `SEC-07` | P1 | DEMO | Privacy notice and deletion workflow | User consent rights data access actionable |
 | `SEC-08` | P1 | PLANNED | API rate limit and abuse detection | Attack traffic throttled without blocking normal users |
 | `SEC-09` | P1 | PLANNED | Media entitlement and short signed URLs | Expired subscription cannot mint access URLs |
 | `SEC-10` | P1 | PLANNED | Secret management and rotation | No API secrets bundled into mobile clients |
 | `SEC-11` | P1 | PLANNED | Security headers and mobile certificate controls | Critical traffic protected and audited |
-| `SEC-12` | P1 | PLANNED | Tamper evident event and reviewer audit | Published decisions attributable to authorized reviewers |
+| `SEC-12` | P1 | DEMO | Tamper evident event and reviewer audit | Published decisions attributable to authorized reviewers |
 | `SEC-13` | P1 | PLANNED | Offboarding and privileged access review | Staff deprovisioning revokes content access quickly |
-| `SEC-14` | P1 | PLANNED | Backup recovery and multi-tenant isolation tests | Data loss or cross-tenant leak tests block release |
+| `SEC-14` | P1 | DEMO | Backup recovery and multi-tenant isolation tests | Data loss or cross-tenant leak tests block release |
 | `SEC-15` | P1 | PLANNED | Content moderation and user reporting | Harmful unreviewed public stories cannot publish |
 
 ## Recommendation

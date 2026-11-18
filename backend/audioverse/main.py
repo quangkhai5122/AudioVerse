@@ -1,6 +1,8 @@
-"""AudioVerse safe-local proof of concept.
+"""AudioVerse FastAPI application with T002 rights provenance and T003 auth/RBAC/migrations.
 
-THIS APP IS NOT PRODUCTION READY. X-Demo-Actor is NOT authentication.
+Supports Bearer token authentication, device sessions, guest-to-account migration,
+personal data export/deletion, RBAC audit logs, and deterministic event replay recovery,
+while preserving `X-Demo-Actor` compatibility when `Settings.allow_demo_header=True`.
 """
 import re
 from contextlib import asynccontextmanager
@@ -10,6 +12,23 @@ from fastapi import FastAPI, Header, HTTPException, Response
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from audioverse.auth import (
+    STAFF_REVIEWER_ROLES,
+    AuthError,
+    ForbiddenError,
+    Principal,
+    delete_user_account,
+    export_user_data,
+    list_device_sessions,
+    login_user,
+    migrate_guest_runs,
+    refresh_device_session,
+    register_user,
+    require_role,
+    revoke_device_session,
+    verify_access_token,
+    verify_security_audit_chain,
+)
 from audioverse.content import (
     assert_permission,
     read_json,
@@ -22,12 +41,14 @@ from audioverse.settings import Settings
 from audioverse.storage import (
     ReplayConflict,
     RunNotFound,
+    TamperDetectedError,
     VersionConflict,
     choose,
     create_run,
     event_history,
     get_run,
     init_db,
+    restore_run_from_events,
 )
 
 
@@ -43,6 +64,32 @@ class ChoiceBody(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")
 
 
+class RegisterBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+    display_name: str = Field(min_length=1, max_length=128)
+    device_name: str = Field(default="default-device", min_length=1, max_length=128)
+
+
+class LoginBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+    device_name: str = Field(default="default-device", min_length=1, max_length=128)
+
+
+class RefreshBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: str = Field(min_length=1, max_length=128)
+    refresh_token: str = Field(min_length=16, max_length=256)
+
+
+class MigrateGuestBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    guest_actor: str = Field(min_length=4, max_length=64, pattern=r"^[a-zA-Z0-9_-]{4,64}$")
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     cfg = settings or Settings.from_env()
     if cfg.env != "demo":
@@ -53,20 +100,49 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if story["license_id"] != license_info["id"]:
         raise RuntimeError("Story license mismatch")
     manifest = validate_rights_manifest(license_info, story=story, media_dir=cfg.media_path)
+    story["edition_id"] = manifest.grant.edition_id
     assert_permission(manifest, "stream")
     assert_permission(manifest, "derivative")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        init_db(cfg.db_path)
+        init_db(cfg.db_path, initial_story=story)
         yield
 
     app = FastAPI(title="AudioVerse — Local Demo API", version="0.1.0", lifespan=lifespan)
 
-    def actor_or_400(x_demo_actor: Annotated[str, Header()] = "demo-local") -> str:
+    def resolve_principal(
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+        *,
+        require_token: bool = False,
+    ) -> Principal:
+        if authorization is not None:
+            if not authorization.startswith("Bearer "):
+                raise HTTPException(
+                    401,
+                    {"code": "AUTH_INVALID_HEADER", "message": "Expected Bearer token"},
+                )
+            raw_token = authorization.removeprefix("Bearer ").strip()
+            try:
+                return verify_access_token(
+                    cfg.db_path,
+                    secret=cfg.auth_secret,
+                    token=raw_token,
+                )
+            except AuthError as exc:
+                raise HTTPException(
+                    401, {"code": exc.code, "message": exc.message}
+                ) from None
+
+        if require_token or not cfg.allow_demo_header:
+            raise HTTPException(
+                401,
+                {"code": "AUTH_REQUIRED", "message": "Bearer authentication required"},
+            )
         if not re.fullmatch(r"[a-zA-Z0-9_-]{4,64}", x_demo_actor):
             raise HTTPException(400, "Demo actor must be 4–64 safe characters")
-        return x_demo_actor
+        return Principal(actor_id=x_demo_actor, role="listener", authenticated=False)
 
     def enforce_right(action: str, scene_id: str | None = None) -> None:
         try:
@@ -77,6 +153,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/healthz")
     def health():
         return {"status": "ok", "environment": "demo", "ai": "disabled", "billing": "disabled"}
+
+    # --- Catalog & Rights (Anonymous browse permitted per ACC-01) ---
 
     @app.get("/api/v1/catalog")
     def catalog():
@@ -135,19 +213,150 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "asset_count": len(manifest.assets),
         }
 
+    # --- Authentication, Device Sessions, Migration, Export/Delete (T003) ---
+
+    @app.post("/api/v1/auth/register", status_code=201)
+    def auth_register(body: RegisterBody):
+        try:
+            return register_user(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                email=body.email,
+                password=body.password,
+                display_name=body.display_name,
+                device_name=body.device_name,
+                role="listener",
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.post("/api/v1/auth/login")
+    def auth_login(body: LoginBody):
+        try:
+            return login_user(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                email=body.email,
+                password=body.password,
+                device_name=body.device_name,
+            )
+        except AuthError as exc:
+            raise HTTPException(401, {"code": exc.code, "message": exc.message}) from None
+
+    @app.post("/api/v1/auth/refresh")
+    def auth_refresh(body: RefreshBody):
+        try:
+            return refresh_device_session(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                session_id=body.session_id,
+                refresh_token=body.refresh_token,
+            )
+        except AuthError as exc:
+            raise HTTPException(401, {"code": exc.code, "message": exc.message}) from None
+
+    @app.post("/api/v1/auth/logout")
+    def auth_logout(authorization: Annotated[str | None, Header()] = None):
+        principal = resolve_principal(authorization, require_token=True)
+        assert principal.session_id is not None
+        revoke_device_session(
+            cfg.db_path,
+            user_id=principal.actor_id,
+            session_id=principal.session_id,
+        )
+        return {"status": "revoked", "session_id": principal.session_id}
+
+    @app.get("/api/v1/me/devices")
+    def me_devices(authorization: Annotated[str | None, Header()] = None):
+        principal = resolve_principal(authorization, require_token=True)
+        return list_device_sessions(cfg.db_path, user_id=principal.actor_id)
+
+    @app.delete("/api/v1/me/devices/{session_id}")
+    def me_revoke_device(
+        session_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+    ):
+        principal = resolve_principal(authorization, require_token=True)
+        ok = revoke_device_session(
+            cfg.db_path,
+            user_id=principal.actor_id,
+            session_id=session_id,
+        )
+        if not ok:
+            raise HTTPException(404, "Session not found")
+        return {"status": "revoked", "session_id": session_id}
+
+    @app.post("/api/v1/me/migrate-guest")
+    def me_migrate_guest(
+        body: MigrateGuestBody,
+        authorization: Annotated[str | None, Header()] = None,
+    ):
+        principal = resolve_principal(authorization, require_token=True)
+        try:
+            return migrate_guest_runs(
+                cfg.db_path,
+                guest_actor=body.guest_actor,
+                target_user_id=principal.actor_id,
+            )
+        except ForbiddenError as exc:
+            raise HTTPException(409, {"code": exc.code, "message": exc.message}) from None
+
+    @app.get("/api/v1/me/export")
+    def me_export(authorization: Annotated[str | None, Header()] = None):
+        principal = resolve_principal(authorization, require_token=True)
+        return export_user_data(cfg.db_path, user_id=principal.actor_id)
+
+    @app.delete("/api/v1/me")
+    def me_delete(authorization: Annotated[str | None, Header()] = None):
+        principal = resolve_principal(authorization, require_token=True)
+        return delete_user_account(cfg.db_path, user_id=principal.actor_id)
+
+    @app.get("/api/v1/admin/security-audit")
+    def admin_security_audit(authorization: Annotated[str | None, Header()] = None):
+        principal = resolve_principal(authorization, require_token=True)
+        try:
+            require_role(
+                cfg.db_path,
+                principal,
+                STAFF_REVIEWER_ROLES,
+                action="READ_SECURITY_AUDIT",
+            )
+        except ForbiddenError as exc:
+            raise HTTPException(403, {"code": exc.code, "message": exc.message}) from None
+        return {
+            "chain_valid": verify_security_audit_chain(cfg.db_path),
+            "actor_id": principal.actor_id,
+            "role": principal.role,
+        }
+
+    # --- Story Runs & Choices (Scoped per authenticated user or demo actor) ---
+
     @app.post("/api/v1/runs", status_code=201)
-    def new_run(body: NewRun, x_demo_actor: Annotated[str, Header()] = "demo-local"):
-        actor = actor_or_400(x_demo_actor)
+    def new_run(
+        body: NewRun,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
         if body.story_id != story["id"]:
             raise HTTPException(404, "Story not found")
         enforce_right("derivative")
-        return create_run(cfg.db_path, story, actor)
+        return create_run(
+            cfg.db_path,
+            story,
+            principal.actor_id,
+            edition_id=manifest.grant.edition_id,
+        )
 
     @app.get("/api/v1/runs/{run_id}")
-    def run(run_id: str, x_demo_actor: Annotated[str, Header()] = "demo-local"):
-        actor = actor_or_400(x_demo_actor)
+    def run(
+        run_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
         try:
-            return get_run(cfg.db_path, story, actor, run_id)
+            return get_run(cfg.db_path, story, principal.actor_id, run_id)
         except RunNotFound:
             raise HTTPException(404, "Run not found") from None
 
@@ -155,15 +364,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def select_choice(
         run_id: str,
         body: ChoiceBody,
+        authorization: Annotated[str | None, Header()] = None,
         x_demo_actor: Annotated[str, Header()] = "demo-local",
     ):
-        actor = actor_or_400(x_demo_actor)
+        principal = resolve_principal(authorization, x_demo_actor)
         enforce_right("derivative")
         try:
             return choose(
                 cfg.db_path,
                 story,
-                actor,
+                principal.actor_id,
                 run_id,
                 body.choice_id,
                 body.expected_version,
@@ -177,12 +387,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(409, str(exc)) from None
 
     @app.get("/api/v1/runs/{run_id}/events")
-    def events(run_id: str, x_demo_actor: Annotated[str, Header()] = "demo-local"):
-        actor = actor_or_400(x_demo_actor)
+    def events(
+        run_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
         try:
-            return event_history(cfg.db_path, actor, run_id)
+            return event_history(cfg.db_path, principal.actor_id, run_id)
         except RunNotFound:
             raise HTTPException(404, "Run not found") from None
+
+    @app.post("/api/v1/runs/{run_id}/restore")
+    def restore_run(
+        run_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        try:
+            return restore_run_from_events(cfg.db_path, story, principal.actor_id, run_id)
+        except RunNotFound:
+            raise HTTPException(404, "Run not found") from None
+        except TamperDetectedError as exc:
+            raise HTTPException(409, str(exc)) from None
 
     @app.get("/api/v1/audio/{scene_id}.mp3")
     def stream_demo(scene_id: str):

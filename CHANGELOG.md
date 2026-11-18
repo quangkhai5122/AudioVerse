@@ -1,5 +1,10 @@
 # Changelog
 
+## T003 user authentication, RBAC, migrations, edition pinning & replay recovery — 2026-11-18
+- Implemented scrypt password hashing, HMAC-SHA256 Bearer tokens, revocable `device_sessions`, token refresh rotation, idempotent guest-to-account migration, personal data export, account deletion/anonymization, and RBAC with hash-chained `security_audit_log` in `backend/audioverse/auth.py` (`ACC-01`–`ACC-07`, `ACC-10`, `SEC-01`, `SEC-02`, `SEC-07`, `SEC-12`, `SEC-14`).
+- Added versioned schema migrations (`schema_migrations`), DB-level `BEFORE UPDATE/DELETE` immutability triggers on `events` and `security_audit_log`, immutable `edition_id` pinning (`editions`, `INT-08`), `story_snapshots`, deterministic event replay recovery (`POST /api/v1/runs/{run_id}/restore`, `INT-18`), and PostgreSQL target DDL with Row-Level Security (`RLS`).
+- Expanded backend test suite to 30 passing tests.
+
 ## T002 content rights provenance & maker-checker policy engine — 2026-11-18
 - Implemented canonical `RightsGrant`, `ContractEvidence`, `ChainOfTitle`, `ReviewAuditEntry`, `AssetLicense`, and `RightsManifest` models and fail-closed policy evaluator in `backend/audioverse/rights.py` (`RGT-01`–`RGT-14`).
 - Enforced maker-checker workflow (`submit_evidence -> begin_review -> approve_grant`) blocking creator self-approval, prohibited public scrape URLs (YouTube/TikTok/SoundCloud/Spotify/RSS), territory/language/edition/time windows, 60/30/7-day renewal warnings, asset quarantine, SHA-256 verification across all 11 demo MP3s, dispute holds, and takedown freezes.

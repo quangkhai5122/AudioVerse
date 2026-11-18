@@ -5,13 +5,13 @@
 | T000 | Repository onboarding/audit and long-term workflow | R0 | DONE | Local audit evidence | Audit; no production acceptance |
 | T001 | Native Flutter build, test and foreground player | R1 | DONE (Android; iOS needs macOS) | Flutter 3.50.0 + Android SDK 36/AVD 35 verified | Device QA (Android pass) |
 | T002 | Content rights schema, contract and evidence review design | R1 | DONE | None | Legal rights (schema & policy pass) |
-| T003 | Postgres, migrations, user auth and tenant isolation design | R1 | READY | T002 schema (done); T001 client contract (done) | Security |
-| T004 | Authenticated media streaming and signed delivery | R1 | PLANNED | T002,T003 | Rights + security |
-| T005 | Player lifecycle, offline/resume/background plan | R1 | PLANNED | T001,T004 | Platform |
-| T006 | Narrative AI provider adapters & schema verifier | R2 | PLANNED | T002, narrative eval design | Content rights |
-| T007 | TTS API adapters + benchmark & audio pipeline | R2 | PLANNED | T002 | Voice license |
-| T008 | Authoring CMS and content publishing gate | R2 | PLANNED | T002,T003 | Provenance review |
-| T009 | Story state versioning, branching editor & migrations | R2 | PLANNED | T003,T006 | Narrative QA |
+| T003 | Postgres, migrations, user auth and tenant isolation design | R1 | DONE | T002 schema (done); T001 client contract (done) | Security (auth, RBAC & migrations pass) |
+| T004 | Authenticated media streaming and signed delivery | R1 | READY | T002 (done), T003 (done) | Rights + security |
+| T005 | Player lifecycle, offline/resume/background plan | R1 | PLANNED | T001 (done), T004 | Platform |
+| T006 | Narrative AI provider adapters & schema verifier | R2 | READY | T002 (done), narrative eval design | Content rights |
+| T007 | TTS API adapters + benchmark & audio pipeline | R2 | READY | T002 (done) | Voice license |
+| T008 | Authoring CMS and content publishing gate | R2 | READY | T002 (done), T003 (done) | Provenance review |
+| T009 | Story state versioning, branching editor & migrations | R2 | PLANNED | T003 (done), T006 | Narrative QA |
 | T010 | Analytics, cost ledger, provider circuit breaker | R2 | PLANNED | T006,T007 | Budget cap |
 | T011 | In-app purchase, entitlement and creator royalties | R3 | BLOCKED | T003,T004,T010, legal review | Payments, compliance |
 | T012 | Security, privacy, app store and VN game/service review | R3 | BLOCKED | T002-T011 | External expert approval |
