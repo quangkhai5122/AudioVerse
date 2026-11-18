@@ -8,13 +8,14 @@ Base `/api/v1`; JSON UTF-8; IDs opaque. Mutations require idempotency keys and o
 | Method | Path | Request | Response/status | Notes |
 |---|---|---|---|---|
 | GET | `/healthz` | none | 200 `{status:ok,environment:demo,ai:disabled,billing:disabled}` | Local only |
-| GET | `/api/v1/catalog` | none | 200 work list | Only original demo work |
-| GET | `/api/v1/works/{story_id}` | id | 200/404 | Public metadata |
-| POST | `/api/v1/runs` | `{"story_id":"ben-kia-canh-cua"}` | 201 run snapshot | Default demo actor |
+| GET | `/api/v1/catalog` | none | 200 work list | Includes `edition_id`, `attribution`, `voice_label`, `rights_grant_id`/`version` |
+| GET | `/api/v1/works/{story_id}` | id | 200/404 | Public metadata + attribution |
+| GET | `/api/v1/works/{story_id}/rights` | id | 200/404 | Public provenance summary (`RightsGrant` state, territories, languages, renewal alert, asset count) |
+| POST | `/api/v1/runs` | `{"story_id":"ben-kia-canh-cua"}` | 201 run snapshot; 403 if derivative right denied | Default demo actor |
 | GET | `/api/v1/runs/{run_id}` | header | 200/404 snapshot | Demo actor scoping only |
-| POST | `/api/v1/runs/{run_id}/choices` | body below | 200 snapshot; 409 stale/reuse; 422 invalid; 404 | Idempotent commit |
+| POST | `/api/v1/runs/{run_id}/choices` | body below | 200 snapshot; 409 stale/reuse; 422 invalid; 403 if derivative right denied; 404 | Idempotent commit |
 | GET | `/api/v1/runs/{run_id}/events` | header | 200 event list | Ordered, no secrets |
-| GET | `/api/v1/audio/{scene_id}.mp3` | scene | 200 audio or 404 | Public local sample media; no real licensing/auth/DRM |
+| GET | `/api/v1/audio/{scene_id}.mp3` | scene | 200 audio; 403 if stream right/asset quarantined; 404 | Per-scene `AssetLicense` & `stream` gate; demo sample media |
 | GET | `/` | none | 200 HTML | Browser demo |
 
 ### POST choice example

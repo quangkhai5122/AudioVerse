@@ -10,5 +10,192 @@
   "territory": "Demo only; commercial exploitation requires owner rights signoff",
   "evidence": "Original content in content/demo_story/story.json; synthetic espeak demo mp3",
   "production_approval": false,
-  "reviewer_note": "Demo-only manifest, NOT an authenticated legal rights chain"
+  "reviewer_note": "Demo-only manifest, NOT an authenticated legal rights chain",
+  "grant": {
+    "grant_id": "original-demo-2026",
+    "version": 1,
+    "work_id": "ben-kia-canh-cua",
+    "edition_id": "ben-kia-canh-cua-ed1",
+    "source_type": "original_project",
+    "submitter_id": "author-demo-origin",
+    "reviewer_id": "reviewer-demo-governance",
+    "state": "PUBLISHED",
+    "granted_actions": ["stream", "offline", "derivative", "tts"],
+    "denied_actions": ["voice_clone", "training"],
+    "territories": ["VN", "DEMO_LOCAL"],
+    "languages": ["vi-VN"],
+    "valid_from": "2026-01-01T00:00:00Z",
+    "expires_at": "2028-12-31T23:59:59Z",
+    "takedown_active": false,
+    "dispute_active": false,
+    "verified_for_demo": true,
+    "production_approval": false,
+    "chain_of_title": {
+      "literary_author": "AudioVerse Original Studio",
+      "economic_rights_holder": "AudioVerse starter project content owner",
+      "source_language": "vi-VN",
+      "is_translated": false,
+      "translation_holder": null,
+      "adaptation_holder": "AudioVerse Original Studio",
+      "performer_holder": null,
+      "master_recording_holder": null,
+      "voice_consent_holder": null,
+      "attribution_text": "Tác phẩm gốc AudioVerse · Giọng tổng hợp kỹ thuật (eSpeak)",
+      "voice_label": "synthetic_tts"
+    },
+    "evidence": {
+      "evidence_id": "ev-original-demo-2026-v1",
+      "contract_version": 1,
+      "document_sha256": "983affeac015d1c6b588a36f26cfd594a4c0e4c3df7aaf90ab8b7945f7c3353c",
+      "submitted_by": "author-demo-origin",
+      "submitted_at": "2026-11-17T00:00:00Z",
+      "source_url": null,
+      "notes": "SHA-256 of content/demo_story/story.json; locally synthesized eSpeak fixtures."
+    },
+    "audit_log": [
+      {
+        "audit_id": "audit-demo-2026-0001",
+        "reviewer_id": "reviewer-demo-governance",
+        "reviewer_role": "rights_officer",
+        "decision": "APPROVE",
+        "decided_at": "2026-11-17T01:00:00Z",
+        "evidence_version": 1,
+        "note": "Approved for local development demo only; production_approval remains false."
+      }
+    ]
+  },
+  "assets": {
+    "s0": {
+      "asset_id": "demo-audio-s0",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s0",
+      "source_type": "synthetic_tts",
+      "sha256": "90d6e7e62a1d0f130380da5aa81b99910b38ebc4b0af8cd36233d6921920ce20",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s1": {
+      "asset_id": "demo-audio-s1",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s1",
+      "source_type": "synthetic_tts",
+      "sha256": "a5e98b7b1aee7a6f3723ccf793ff52f7ad8aaaabdda506282730150fc7b1d07b",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s2": {
+      "asset_id": "demo-audio-s2",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s2",
+      "source_type": "synthetic_tts",
+      "sha256": "c763b722c4ad969078aebf439c447ed4a8fba1ad887be4a3dffad0e2a4b85a77",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s3": {
+      "asset_id": "demo-audio-s3",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s3",
+      "source_type": "synthetic_tts",
+      "sha256": "970b528823f7c273b54d87b30fd5677551bc2bcd7dc30bf6ca4d82203ef3594c",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s4": {
+      "asset_id": "demo-audio-s4",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s4",
+      "source_type": "synthetic_tts",
+      "sha256": "d4dc5e687696c8ffe7d6588d26f90dc783e19793cdd75d261e770944cf1bf278",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s5": {
+      "asset_id": "demo-audio-s5",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s5",
+      "source_type": "synthetic_tts",
+      "sha256": "062b790175c6025895910d83c516e3fbf978b5e4dd90cafd08dddc344e5362f0",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s6": {
+      "asset_id": "demo-audio-s6",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s6",
+      "source_type": "synthetic_tts",
+      "sha256": "1e159bfe900b86297fea6ae9fad77a76cbe2492216f0da3834ef0dc623106e0a",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s7": {
+      "asset_id": "demo-audio-s7",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s7",
+      "source_type": "synthetic_tts",
+      "sha256": "5ff312d71d1d736d8788b380a38344da2ca3d1b63cbcc2a701cf5e59d2d0ef42",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s8": {
+      "asset_id": "demo-audio-s8",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s8",
+      "source_type": "synthetic_tts",
+      "sha256": "cb73146d297a833f6eade1f25a77833d6ee61869db329f7b18f0daaeb47034bd",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s9": {
+      "asset_id": "demo-audio-s9",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s9",
+      "source_type": "synthetic_tts",
+      "sha256": "6408daa56822ea3fabfab40f290f8dc5326e2f9d8178d361174a094db2ddf4f9",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    },
+    "s10": {
+      "asset_id": "demo-audio-s10",
+      "work_id": "ben-kia-canh-cua",
+      "edition_id": "ben-kia-canh-cua-ed1",
+      "scene_id": "s10",
+      "source_type": "synthetic_tts",
+      "sha256": "083244484486d33c2d9762152e12f020770dfc13b0c8aaba64de6014e653fcd6",
+      "rights_grant_id": "original-demo-2026",
+      "rights_grant_version": 1,
+      "status": "published",
+      "model_version": "espeak-vi-135wpm-64k"
+    }
+  }
 }

@@ -106,3 +106,23 @@
   - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test` (in `mobile/`) => `No issues found!`, **6 passed**.
   - `SHA256SUMS.txt` verification => 189 entries, 0 mismatches.
 - **Task state and next exact action:** Active branch is now `main` tracking `origin/main`. Next task: **T002 — Content rights schema, contract and evidence review design** (`READY`, directly on `main`).
+
+## 2026-11-18 08:03 +07 — T002 Content Rights Schema, Maker-Checker Workflow & Fail-Closed Evaluator
+- **Branch/commit baseline:** `main` at `54bd11eb7ad896a765fec0c2b6232d63a9481602` (`origin/main`), clean working tree.
+- **Objective and exact files changed:**
+  - Created `backend/audioverse/rights.py` implementing canonical `RightsGrant`, `ContractEvidence`, `ChainOfTitle`, `ReviewAuditEntry`, `AssetLicense`, `RightsManifest`, `RightsDecision`, `RightsViolationError`, 60/30/7-day `renewal_warning_level`, maker-checker workflow transitions (`submit_evidence`, `begin_review`, `approve_grant`, `trigger_takedown`, `trigger_dispute_hold`), prohibited scrape URL guard (`check_prohibited_source_url`), and SHA-256 asset digest verifier (`verify_asset_digest`).
+  - Updated `backend/audioverse/content.py` (`validate_rights_manifest`, `assert_permission`) to delegate to `audioverse.rights` while keeping full backward compatibility with dict-based test fixtures.
+  - Enriched `content/licenses/demo_license.json` with canonical `grant` (`RightsGrant`) and `assets` (`s0`..`s10` `AssetLicense` entries with verified SHA-256 hashes of `media/demo/s0.mp3`..`s10.mp3`).
+  - Updated `backend/audioverse/main.py` to validate manifest + asset SHA-256s at startup, expose `edition_id`, `attribution`, `voice_label`, and `rights_grant_id`/`version` on `/api/v1/catalog` and `/api/v1/works/{story_id}`, add `GET /api/v1/works/{story_id}/rights`, and enforce fail-closed `derivative` / per-scene `stream` rights returning HTTP `403` with machine error codes.
+  - Added 8 comprehensive unit & API integration tests in `backend/tests/test_rights.py` and updated `scripts/check_repo.py`.
+  - Updated `RGT-02`..`RGT-14` from `PLANNED` to `DEMO` in `docs/product/requirements.psv` and regenerated `docs/product/FUNCTIONAL_SPEC.md`. Updated `docs/engineering/API.md`, `docs/operations/TEST_STRATEGY.md`, `docs/tasks/T002_RIGHTS_PROVENANCE.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/CURRENT_TASK.md`, `docs/agent/BACKLOG.md`, `CHANGELOG.md`, and `SHA256SUMS.txt`.
+- **Decisions / ADR reference:** Implements ADR-001 and ADR-007. Creator self-approval and public streaming/RSS URLs fail closed (`RIGHTS_SELF_APPROVAL_FORBIDDEN`, `RIGHTS_UNAUTHORIZED_SOURCE_URL`). `verified_for_demo=True` remains strictly separated from `production_approval=True`.
+- **Tests RUN:**
+  - `.\.venv\Scripts\python.exe -m pytest -v -p no:cacheprovider --basetemp=".venv\pytest_tmp"` => **25 passed, 1 warning in 0.73s**.
+  - `.\.venv\Scripts\python.exe scripts/check_repo.py` => `Integrity PASS: 11 scenes, 182 requirements, assets and agent docs`.
+  - `.\.venv\Scripts\python.exe -m compileall -q backend scripts` => exit 0.
+  - `.\.venv\Scripts\python.exe -m ruff check backend scripts` => `All checks passed!`.
+  - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test` (in `mobile/`) => `No issues found!`, **6 passed**.
+- **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
+- **Risks / unresolved questions:** Relational DB storage of rights grants and authenticated reviewer identity tokens depend on `T003` (Auth & Postgres) and `T008` (Creator CMS).
+- **Task state and next exact action:** `T002` DONE on `main`. Next task: **T003 — Postgres, migrations, user auth and tenant isolation design** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue` followed by `.\.venv\Scripts\python.exe scripts/check_repo.py`.

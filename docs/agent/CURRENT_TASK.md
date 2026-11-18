@@ -1,9 +1,9 @@
 # CURRENT_TASK — one next engineering packet
 
-**Next:** T002 — Content rights schema, contract and evidence review design
+**Next:** T003 — Postgres, migrations, user auth and tenant isolation design
 **Implementation:** READY, not started
-**Previous:** T001 — Flutter Bootstrap & Device Validation DONE (Android-first verified on API 35 emulator; iOS requires macOS/Xcode)
-**Authorization:** ordinary local development/commit/push is pre-authorized; deployment/store/content publication is not.
+**Previous:** T002 — Content rights schema, contract and evidence review design DONE on `main`
+**Authorization:** ordinary local development/commit/push on `main` is pre-authorized; deployment/store/content publication is not.
 
 ## Exact next commands (PowerShell, repository root)
 
@@ -12,15 +12,15 @@
 .\.venv\Scripts\python.exe scripts/check_repo.py
 ```
 
-Read `AGENTS.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/BACKLOG.md`, latest `docs/agent/SESSION_LOG.md`, `docs/tasks/T002_RIGHTS_PROVENANCE.md`, and `docs/operations/LEGAL_RIGHTS_RELEASE_GATES.md` before editing.
+Read `AGENTS.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/BACKLOG.md`, latest `docs/agent/SESSION_LOG.md`, `docs/tasks/T003_AUTH_POSTGRES.md`, `docs/engineering/DATA_MODEL.md`, and `docs/operations/SECURITY_PRIVACY.md` before editing.
 
-## Objective & Scope for T002
-- Design and implement the canonical `RightsGrant`, `ContractEvidence`, and `AssetLicense` schema and validator in the backend (`backend/audioverse/content.py` or a dedicated `rights.py` module while preserving backward compatibility for existing callers/tests).
-- Enforce distinct action scopes (`stream`, `offline`, `derivative`, `tts`, `voice_clone`, `training`), effective term (`valid_from` / `expires_at`), territory, takedown/revocation status, and maker-checker review state (`DRAFT -> EVIDENCE_SUBMITTED -> UNDER_REVIEW -> APPROVED -> PUBLISHED -> EXPIRING -> EXPIRED/REVOKED/TAKEDOWN`) where a creator cannot self-approve real content.
-- Keep `demo_license.json` working for local demo mode while ensuring production/non-demo checks fail closed on missing contract evidence, unauthenticated/missing reviewer, expired grants, territory mismatch, revoked/takedown status, derivative use on stream-only grants, or unauthorized voice cloning/training.
+## Objective & Scope for T003
+- Replace spoofable `X-Demo-Actor` in non-demo / authenticated routes with signed session/token authentication and role-based access control (`listener`, `creator`, `legal_reviewer`, `rights_officer`, `compliance_admin`) while preserving local demo compatibility where explicitly configured.
+- Introduce relational schema/migrations and append-only/tamper-evident event protections, pinning `story_runs` to `edition_id` and scoping user runs strictly to authenticated user identities so User A can never access User B's run or history.
 
 ## Acceptance criteria
-- [ ] Typed rights/provenance models and deterministic policy evaluation implemented with full backward compatibility for existing demo routes.
-- [ ] Unit and API negative tests cover missing grant, expired term, territory mismatch, stream-only vs. derivative, unauthorized voice_clone/training, self-approval rejection, and takedown/revocation freeze.
-- [ ] Relevant `RGT-*` requirement statuses updated in `docs/product/requirements.psv` and regenerated in `docs/product/FUNCTIONAL_SPEC.md`.
-- [ ] Backend tests, repository check, Ruff, and Flutter `analyze`/`test` remain green; update task/state/backlog/log with exact execution evidence.
+- [ ] User A cannot read or mutate User B's story run or events; unauthenticated/expired/revoked tokens are denied (`401`/`403`).
+- [ ] Role escalation attempts (e.g. listener/creator attempting reviewer actions) are denied and auditable (`ACC-10`, `SEC-01`, `SEC-02`).
+- [ ] Database schema migration and deterministic event replay/snapshot recovery tests pass while preserving local demo tests.
+- [ ] Relevant `ACC-*` and `SEC-*` requirement statuses updated in `docs/product/requirements.psv` and regenerated in `docs/product/FUNCTIONAL_SPEC.md`.
+- [ ] Backend tests, repository check, Ruff, and Flutter `analyze`/`test` remain green; commit and push directly to `origin/main`.

@@ -1,5 +1,10 @@
 # Changelog
 
+## T002 content rights provenance & maker-checker policy engine — 2026-11-18
+- Implemented canonical `RightsGrant`, `ContractEvidence`, `ChainOfTitle`, `ReviewAuditEntry`, `AssetLicense`, and `RightsManifest` models and fail-closed policy evaluator in `backend/audioverse/rights.py` (`RGT-01`–`RGT-14`).
+- Enforced maker-checker workflow (`submit_evidence -> begin_review -> approve_grant`) blocking creator self-approval, prohibited public scrape URLs (YouTube/TikTok/SoundCloud/Spotify/RSS), territory/language/edition/time windows, 60/30/7-day renewal warnings, asset quarantine, SHA-256 verification across all 11 demo MP3s, dispute holds, and takedown freezes.
+- Added `GET /api/v1/works/{story_id}/rights` and enriched catalog metadata with `edition_id`, `attribution`, and `voice_label`; expanded backend test suite to 25 passing tests.
+
 ## T001 Flutter bootstrap & Android emulator validation — 2026-11-18
 - Installed Flutter 3.50.0 (Dart 3.14.0) and Android SDK/NDK/CMake/Emulator on workstation; generated native `mobile/android` and `mobile/ios` project scaffolding and `pubspec.lock`.
 - Configured debug-only loopback cleartext HTTP (`10.0.2.2`, `127.0.0.1`, `localhost`) via Android debug `network_security_config.xml` without weakening release manifests.

@@ -2,7 +2,7 @@
 
 ## Layered test pyramid
 - **Unit:** pure state-machine preconditions/effects, story graph validation, rights decision matrix, unit rounding of AI cost, price arithmetic, content age and version gates.
-- **API integration:** FastAPI routes with temporary DB; idempotency replay, stale versions, demo actor scoping, malformed requests, content not found and synthetic MP3 output. Current suite totals 17 tests (7 API, 6 engine/rights/AI, 1 full graph, 3 cost-model). Takeover Windows/Python 3.13.9: 17 passed, one Starlette/httpx warning; no real authentication is implied.
+- **API integration:** FastAPI routes with temporary DB; idempotency replay, stale versions, demo actor scoping, malformed requests, content not found, rights provenance/quarantine/takedown gates, and synthetic MP3 output. Current suite totals 25 backend tests (7 API, 6 engine/rights/AI, 1 full graph, 3 cost-model, 8 rights provenance & maker-checker) plus 6 Flutter widget tests. Windows/Python 3.13.9: 25 passed, one Starlette/httpx warning; no real authentication is implied.
 - **Contract:** OpenAPI client compatibility, schema migrations, app-store webhook signatures, provider request/response fixtures (no paid calls in CI).
 - **Mobile widget/device:** Flutter catalog/player/choice flows, Android+iOS audio focus, lockscreen controls, background, re-open, offline, weak network, 3G, phone calls, screen readers; **not run in packaging environment**.
 - **Production E2E:** verified entitlement, secure stream, creator ingestion with rights reviewer, takedown, payment refund/restore, AI generation retries and no-double-bill.

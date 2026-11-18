@@ -165,19 +165,19 @@ Priority P0 means critical to core architecture, not release-ready. P1 commercia
 | ID | Priority | Status | Behavior | Acceptance criterion |
 |---|---|---|---|---|
 | `RGT-01` | P0 | DEMO | Fail-closed demo stream and derivative action checks | Unlisted rights rejected by code and unit test |
-| `RGT-02` | P0 | PLANNED | Canonical chain of title for text and translation | Legal reviewer can verify underlying work ownership |
-| `RGT-03` | P0 | PLANNED | Separate performance master voice and AI-use rights | Missing one applicable grant blocks action |
-| `RGT-04` | P0 | PLANNED | Versioned contract evidence reference | No self-approval from creator submitted metadata |
-| `RGT-05` | P0 | PLANNED | Rights by territory language time and edition | Out-of-scope delivery denied with auditable reason |
-| `RGT-06` | P0 | PLANNED | Derivative use action gate | Stream-only grant cannot enter branching system |
-| `RGT-07` | P0 | PLANNED | Voice cloning consent gate | Unauthorized voice embedding or fine-tuning denied |
-| `RGT-08` | P1 | PLANNED | License expiration and renewal alerts | Expired content unpublished or revalidated as required |
-| `RGT-09` | P1 | PLANNED | Takedown freeze of new downloads and generation | Takedown changes effective permissions rapidly |
-| `RGT-10` | P1 | PLANNED | Evidence and approval audit log | Reviewer identity timestamp decision append-only |
-| `RGT-11` | P1 | PLANNED | Contractual creator credit and attribution | Credits meet terms across mobile and web |
-| `RGT-12` | P1 | PLANNED | Specific right to offline listening | App does not enable downloads under stream-only grant |
-| `RGT-13` | P1 | PLANNED | Third-party API and platform terms registry | Do not rehost YouTube or bypass protected audio |
-| `RGT-14` | P1 | PLANNED | Human escalation for disputed claims | Disputed work paused until review |
+| `RGT-02` | P0 | DEMO | Canonical chain of title for text and translation | Legal reviewer can verify underlying work ownership |
+| `RGT-03` | P0 | DEMO | Separate performance master voice and AI-use rights | Missing one applicable grant blocks action |
+| `RGT-04` | P0 | DEMO | Versioned contract evidence reference | No self-approval from creator submitted metadata |
+| `RGT-05` | P0 | DEMO | Rights by territory language time and edition | Out-of-scope delivery denied with auditable reason |
+| `RGT-06` | P0 | DEMO | Derivative use action gate | Stream-only grant cannot enter branching system |
+| `RGT-07` | P0 | DEMO | Voice cloning consent gate | Unauthorized voice embedding or fine-tuning denied |
+| `RGT-08` | P1 | DEMO | License expiration and renewal alerts | Expired content unpublished or revalidated as required |
+| `RGT-09` | P1 | DEMO | Takedown freeze of new downloads and generation | Takedown changes effective permissions rapidly |
+| `RGT-10` | P1 | DEMO | Evidence and approval audit log | Reviewer identity timestamp decision append-only |
+| `RGT-11` | P1 | DEMO | Contractual creator credit and attribution | Credits meet terms across mobile and web |
+| `RGT-12` | P1 | DEMO | Specific right to offline listening | App does not enable downloads under stream-only grant |
+| `RGT-13` | P1 | DEMO | Third-party API and platform terms registry | Do not rehost YouTube or bypass protected audio |
+| `RGT-14` | P1 | DEMO | Human escalation for disputed claims | Disputed work paused until review |
 | `RGT-15` | P2 | PLANNED | Creator royalty contract version registry | Payout calculations trace to active agreement |
 | `RGT-16` | P2 | PLANNED | Provider output/weight training rights review | Licenses checked for commercial inference and adaptation |
 
