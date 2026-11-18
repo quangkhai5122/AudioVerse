@@ -95,3 +95,14 @@
 - **Tests NOT RUN and why:** Native iOS build (`flutter build ios`) and iOS Simulator validation require macOS + Xcode hardware environment and remain explicitly unrun on Windows.
 - **Risks / unresolved questions:** Persistent cross-restart run/key/position storage and background audio interruptions remain deferred to `T005`; demo API still uses spoofable `X-Demo-Actor` (`T003`) and demo-only rights JSON (`T002`).
 - **Task state and next exact action:** `T001` DONE (Android-first; iOS requires macOS). Next task: **T002 — Content rights schema, contract and evidence review design** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue` followed by `.\.venv\Scripts\python.exe scripts/check_repo.py`.
+
+## 2026-11-18 07:49 +07 — T001 Owner Approval, Merge to `main`, and Direct-`main` Git Policy
+- **Branch/commit baseline:** Created `main` at `codex/t001-flutter-bootstrap` (`a580005566fe45fc7534b08049bee58a8422941f`, fast-forward descendant of `codex/t000-onboarding-audit` `7de3e67`).
+- **Objective and exact files changed:** Record owner acceptance of `T001` (including live Web preview on `http://127.0.0.1:8766/` and `http://127.0.0.1:8765/`), merge/advance `main` to `T001` HEAD, and persist owner's updated Git workflow policy (work directly on `main` and commit/push to `origin/main` when tests pass, instead of creating a new branch per milestone `T001`, `T002`, etc.) across `AGENTS.md`, `CONTRIBUTING.md`, `scripts/agent_bootstrap_prompt.txt`, `docs/agent/OWNER_DECISIONS.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/SESSION_LOG.md`, and `SHA256SUMS.txt`.
+- **Tests RUN:**
+  - `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"` => **17 passed, 1 warning**.
+  - `.\.venv\Scripts\python.exe scripts/check_repo.py` => `Integrity PASS: 11 scenes, 182 requirements, assets and agent docs`.
+  - `.\.venv\Scripts\python.exe -m ruff check backend scripts` => `All checks passed!`.
+  - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test` (in `mobile/`) => `No issues found!`, **6 passed**.
+  - `SHA256SUMS.txt` verification => 189 entries, 0 mismatches.
+- **Task state and next exact action:** Active branch is now `main` tracking `origin/main`. Next task: **T002 — Content rights schema, contract and evidence review design** (`READY`, directly on `main`).

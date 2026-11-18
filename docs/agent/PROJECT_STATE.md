@@ -42,5 +42,5 @@ Evidence: [ONBOARDING_AUDIT_20261117.md](ONBOARDING_AUDIT_20261117.md), [T001_FL
 - Mobile foreground recovery is now verified for in-memory runs (`T001`), but persistent across-process-death run/key/position recovery remains scoped to `T005`.
 
 ## Git / next task
-- Active branch for T001: `codex/t001-flutter-bootstrap` (branched from `codex/t000-onboarding-audit` at `7de3e67`).
+- Active branch: `main` (tracking `origin/main`), containing all verified `T000` and `T001` commits. Under owner policy updated 2026-11-18, ordinary scoped work is developed directly on `main` and pushed to `origin/main` when verification checks pass (no separate branch per milestone).
 - Next: **T002 — Content rights schema, contract and evidence review design** (`READY`). Follow with `T003` (Postgres, migrations, user auth and tenant isolation) and `T004` (Authenticated media streaming).

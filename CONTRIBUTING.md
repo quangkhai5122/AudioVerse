@@ -1,7 +1,7 @@
 # Contributing to AudioVerse
 
 1. Read AGENTS.md and PROJECT_STATE.md; identify and claim a READY task.
-2. Use a descriptive working branch (`codex/T00x-scope`); verify remote history/access and preserve others' changes. Never force-push, rewrite shared history or merge into a protected branch.
+2. Work directly on `main` for ordinary scoped tasks (updated owner policy 2026-11-18; use a separate branch only for large/risky/unapproved changes); verify remote history/access and preserve others' changes. Never force-push or rewrite shared history.
 3. Run `python scripts/check_repo.py` and `python -m pytest` baseline.
 4. Make minimal scoped changes with tests; update API/data/ADR and requirement status accurately.
 5. Prevent copyrighted media, voice samples, private data and credentials from entering commits.

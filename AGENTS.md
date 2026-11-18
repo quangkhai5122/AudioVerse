@@ -4,7 +4,7 @@
 **Repository authority:** checked-in code, tests, specs and task logs (not chat memory).
 **Current lifecycle:** R0/R1 developer demo, NOT production-ready.
 
-**Standing owner protocol (2026-11-17):** repository onboarding/audit comes before feature work. The first takeover session is T000; T001 remains unimplemented until a later engineering session. Repository files, executable evidence and dated decisions are persistent project memory across agents/accounts.
+**Standing owner protocol (2026-11-17, updated 2026-11-18):** repository onboarding/audit (`T000`) and Flutter bootstrap (`T001`) are completed and merged into `main`. Develop ordinary scoped tasks directly on `main` and commit/push to `origin/main` once verification tests pass (do not create a separate branch per milestone `T001`, `T002`, etc.). Repository files, executable evidence and dated decisions are persistent project memory across agents/accounts.
 
 ## Session startup (do in this order)
 
@@ -59,7 +59,7 @@ Every finished or paused session MUST:
 The owner explicitly authorized ordinary AudioVerse development commits and pushes on 2026-11-17. Do not ask again for each routine commit/push. This replaces the starter's per-action approval rule; it does not authorize production deployment, content publication, purchases, payments, legal-term updates or third-party contact.
 
 - Verify the actual branch, remote URL, remote history and access before pushing. Current verified origin is `https://github.com/quangkhai5122/AudioVerse.git`; recheck rather than assuming it never changes.
-- Prefer a dedicated `codex/Txxx-scope` working branch. Never force-push, delete branches, rewrite shared history, merge into protected branches or overwrite others' changes.
+- Work directly on `main` for ordinary scoped tasks; commit and push to `origin/main` when tests pass, rather than creating a new `codex/Txxx-scope` branch for each milestone. Never force-push, delete branches, rewrite shared history or overwrite others' changes.
 - Put large/risky/unapproved changes on a separate branch and report before integration. No secret, real user data or unauthorized content may enter a commit.
 - Run appropriate tests first. If a gate fails, commit only a safe, clearly labelled checkpoint with a documented reason and remaining failures. Never describe it as verified complete.
 - If network/permissions prevent a push, finish local work, record the actual blocker and exact retry command. Do not claim a push succeeded.

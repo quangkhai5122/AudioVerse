@@ -6,10 +6,10 @@
 - Interactive branching by AI is central to differentiation.
 - Prepare full architecture, cost study, future fine-tuning options and long-lived AI Agent coding workflow.
 
-## Owner-confirmed engineering protocol — 2026-11-17
-- First takeover session: T000 repository onboarding/audit, environment/tests, documentation synchronization, then initial commit/push if Git checks are safe. Do not implement T001 during this session.
+## Owner-confirmed engineering protocol — 2026-11-17 (updated 2026-11-18)
+- First takeover session: T000 repository onboarding/audit, environment/tests, documentation synchronization, then initial commit/push if Git checks are safe. T001 was subsequently implemented, verified on Android 15 Emulator and Web preview, and approved by owner on 2026-11-18.
 - Future sessions start from repository instructions/state/tasks and actual Git/code/test evidence. A request to continue means the highest-priority unfinished task in the approved backlog.
-- Ordinary scoped development commits/pushes are pre-authorized after review, suitable tests and remote/branch/access verification. No force-push, branch deletion, shared-history rewrite, protected-branch merge or overwriting others' work. Risky changes remain isolated pending review before integration.
+- **Direct `main` branch workflow (2026-11-18):** Merge verified T000/T001 work into `main`. From T002 onward, develop ordinary scoped tasks directly on `main` and commit/push to `origin/main` when tests pass, instead of creating a new branch per milestone (`T001`, `T002`, etc.). No force-push, branch deletion, shared-history rewrite or overwriting others' work. Large/risky/unapproved changes still use an isolated branch before integration.
 - This permission does not approve deployment, commercial release, content publication, external messaging, API spending, purchases, billing, legal terms or any rights/legal signoff.
 - Close every session with durable state/task/backlog/log updates and a Vietnamese eight-part report. Persist unresolved work and decisions so a new agent needs no prior conversation.
 
