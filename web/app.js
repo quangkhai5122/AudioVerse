@@ -4,11 +4,19 @@ const LOCAL_KEY = 'audioverse-demo-run-id-v1';
 const HEADERS = {'Content-Type': 'application/json', 'X-Demo-Actor': 'demo-local'};
 let current = null;
 let busy = false;
+let pendingChoice = null;
 
 async function api(path, options={}) {
   const response = await fetch(path, {...options, headers:{...HEADERS, ...(options.headers || {})}});
   const data = await response.json();
-  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${response.status}`);
+  if (!response.ok) {
+    const msg = typeof data.detail === 'string'
+      ? data.detail
+      : (data.detail && data.detail.message ? data.detail.message : `HTTP ${response.status}`);
+    const err = new Error(msg);
+    err.status = response.status;
+    throw err;
+  }
   return data;
 }
 function el(tag, text, cls) {
@@ -24,7 +32,7 @@ async function updateHistory() {
     $('timeline').replaceChildren(...events.map(e => el('li', `${e.from_scene} → ${e.to_scene} (${e.choice_id})`)));
   } catch (error) { $('status').textContent = error.message; }
 }
-function render(state) {
+function render(state, preserveStatus = false) {
   current = state;
   $('hint').textContent = `CẢNH ${state.scene.id.toUpperCase()} · PHIÊN BẢN ${state.version}`;
   $('scene-title').textContent = state.scene.title;
@@ -43,12 +51,15 @@ function render(state) {
   $('player').load();
   $('start').hidden = true;
   $('reset').hidden = false;
-  $('status').textContent = state.scene.ending ? 'Bạn đã đến một kết cục. Chọn “Chơi lại” để khám phá nhánh khác.' : 'Nghe truyện hoặc chọn cách hành động tiếp.';
+  if (!preserveStatus) {
+    $('status').textContent = state.scene.ending ? 'Bạn đã đến một kết cục. Chọn “Chơi lại” để khám phá nhánh khác.' : 'Nghe truyện hoặc chọn cách hành động tiếp.';
+  }
   updateHistory();
 }
 async function newRun() {
   if (busy) return;
   busy = true;
+  pendingChoice = null;
   $('status').textContent = 'Đang bắt đầu...';
   try {
     const state = await api('/api/v1/runs', {method:'POST', body:JSON.stringify({story_id:'ben-kia-canh-cua'})});
@@ -62,13 +73,26 @@ async function choose(choiceId) {
   busy = true;
   $('choices').querySelectorAll('button').forEach(b => b.disabled = true);
   $('status').textContent = 'Đang xác nhận lựa chọn...';
+  const key = (pendingChoice && pendingChoice.choiceId === choiceId && pendingChoice.version === current.version)
+    ? pendingChoice.key
+    : crypto.randomUUID().replaceAll('-', '');
+  pendingChoice = {choiceId, version: current.version, key};
   try {
-    const key = crypto.randomUUID().replaceAll('-', '');
     const next = await api(`/api/v1/runs/${current.run_id}/choices`, {method:'POST', body:JSON.stringify({choice_id:choiceId, expected_version:current.version, idempotency_key:key})});
+    pendingChoice = null;
     render(next);
   } catch (error) {
+    if (error.status) pendingChoice = null;
+    if (error.status === 409 && current) {
+      try {
+        const refreshed = await api(`/api/v1/runs/${encodeURIComponent(current.run_id)}`);
+        render(refreshed, true);
+        $('status').textContent = 'Phiên truyện đã thay đổi (409); đã đồng bộ trạng thái mới nhất.';
+        return;
+      } catch (_) {}
+    }
+    if(current) render(current, true);
     $('status').textContent = `Lỗi: ${error.message}. Tải lại trang nếu phiên đã thay đổi.`;
-    if(current) render(current);
   } finally {busy=false;}
 }
 $('start').addEventListener('click',newRun);

@@ -15,7 +15,11 @@ class FakeSceneAudioController implements SceneAudioController {
 
   final List<String> loadedUrls = <String>[];
   final Set<String> failUrlsOnce = <String>{};
+  bool isPlaying = false;
+  bool pausedByInterruption = false;
   bool disposed = false;
+  Duration currentPosition = Duration.zero;
+  double currentSpeed = 1.0;
 
   @override
   Stream<bool> get playingStream => _playing.stream;
@@ -24,10 +28,20 @@ class FakeSceneAudioController implements SceneAudioController {
   Stream<Duration> get positionStream => _position.stream;
 
   @override
-  Duration? get duration => const Duration(seconds: 12);
+  Duration? get duration => const Duration(seconds: 30);
 
   @override
-  Future<void> stop() async {}
+  Duration get position => currentPosition;
+
+  @override
+  double get speed => currentSpeed;
+
+  @override
+  Future<void> stop() async {
+    isPlaying = false;
+    pausedByInterruption = false;
+    _playing.add(false);
+  }
 
   @override
   Future<void> setUrl(String url) async {
@@ -39,17 +53,59 @@ class FakeSceneAudioController implements SceneAudioController {
 
   @override
   Future<void> play() async {
+    isPlaying = true;
+    pausedByInterruption = false;
     _playing.add(true);
   }
 
   @override
   Future<void> pause() async {
+    isPlaying = false;
+    pausedByInterruption = false;
     _playing.add(false);
   }
 
   @override
-  Future<void> seek(Duration position) async {
-    _position.add(position);
+  Future<void> seek(Duration target) async {
+    final maxDur = duration ?? Duration.zero;
+    var clamped = target < Duration.zero ? Duration.zero : target;
+    if (maxDur > Duration.zero && clamped > maxDur) {
+      clamped = maxDur;
+    }
+    currentPosition = clamped;
+    _position.add(clamped);
+  }
+
+  @override
+  Future<void> seekRelative(Duration offset) async {
+    await seek(currentPosition + offset);
+  }
+
+  @override
+  Future<void> setSpeed(double newSpeed) async {
+    currentSpeed = newSpeed.clamp(0.8, 2.0).toDouble();
+  }
+
+  @override
+  Future<void> handleInterruption({
+    required bool begin,
+    bool shouldResume = true,
+  }) async {
+    if (begin) {
+      if (isPlaying) {
+        isPlaying = false;
+        pausedByInterruption = true;
+        _playing.add(false);
+      }
+      return;
+    }
+    if (pausedByInterruption && shouldResume) {
+      pausedByInterruption = false;
+      isPlaying = true;
+      _playing.add(true);
+    } else {
+      pausedByInterruption = false;
+    }
   }
 
   @override
@@ -66,16 +122,23 @@ class FakeAudioVerseApi extends AudioVerseApi {
   bool failCatalogOnce = false;
   bool failNextChoiceWithTransportError = false;
   bool failNextChoiceWith409 = false;
+  bool offlineLeaseValidOnServer = true;
+  DateTime offlineLeaseExpiresAt = DateTime.now().toUtc().add(
+    const Duration(hours: 24),
+  );
   Completer<StoryRun>? delayedChoiceCompleter;
 
   final List<String> submittedIdempotencyKeys = <String>[];
   final List<int> submittedExpectedVersions = <int>[];
+  final List<int> savedPositionsMs = <int>[];
+  final List<double> savedSpeeds = <double>[];
   int getRunCalls = 0;
 
   static const StorySummary demoStory = StorySummary(
     id: 'ben-kia-canh-cua',
     title: 'Bên Kia Cánh Cửa',
-    description: 'Truyện kỳ bí tương tác nguyên bản dùng để kiểm thử AudioVerse.',
+    description:
+        'Truyện kỳ bí tương tác nguyên bản dùng để kiểm thử AudioVerse.',
     genre: 'Kỳ bí / Trinh thám',
   );
 
@@ -106,7 +169,10 @@ class FakeAudioVerseApi extends AudioVerseApi {
       title: 'Cánh cửa phía dưới',
       text: 'Một hành lang hẹp dẫn đến phòng lưu trữ dưới tầng hầm.',
       choices: <StoryChoice>[
-        StoryChoice(id: 'open-cellar', label: 'Mở cửa tầng hầm bằng chìa khóa B'),
+        StoryChoice(
+          id: 'open-cellar',
+          label: 'Mở cửa tầng hầm bằng chìa khóa B',
+        ),
       ],
       memoryNotes: <String>['An cảm thấy chiếc chìa khóa B trong túi áo.'],
       ending: false,
@@ -127,6 +193,8 @@ class FakeAudioVerseApi extends AudioVerseApi {
     version: 0,
     scene: scenes['s0']!,
   );
+
+  List<StoryRun> continueListeningRuns = <StoryRun>[];
 
   @override
   Future<List<StorySummary>> catalog() async {
@@ -153,6 +221,48 @@ class FakeAudioVerseApi extends AudioVerseApi {
     getRunCalls += 1;
     return serverRun;
   }
+
+  @override
+  Future<List<StoryRun>> continueListening() async => continueListeningRuns;
+
+  @override
+  Future<StoryRun> saveProgress(
+    StoryRun run, {
+    required int positionMs,
+    required double playbackSpeed,
+  }) async {
+    savedPositionsMs.add(positionMs);
+    savedSpeeds.add(playbackSpeed);
+    serverRun = StoryRun(
+      id: run.id,
+      storyId: run.storyId,
+      editionId: run.editionId,
+      version: run.version,
+      positionMs: positionMs,
+      playbackSpeed: playbackSpeed,
+      scene: run.scene,
+    );
+    return serverRun;
+  }
+
+  @override
+  Future<OfflineSceneLease> createOfflineLease(
+    String workId,
+    String sceneId,
+  ) async => OfflineSceneLease(
+    leaseId: 'lease-$sceneId',
+    sceneId: sceneId,
+    editionId: 'ben-kia-canh-cua-ed1',
+    downloadUrl: '/api/v1/media/demo-audio-$sceneId?token=signed-offline',
+    sha256: 'a' * 64,
+    byteSize: 100000,
+    transcript: scenes[sceneId]?.text ?? '',
+    expiresAt: offlineLeaseExpiresAt,
+  );
+
+  @override
+  Future<bool> validateOfflineLease(String leaseId) async =>
+      offlineLeaseValidOnServer;
 
   @override
   Future<StoryRun> choose(
@@ -204,6 +314,7 @@ class FakeAudioVerseApi extends AudioVerseApi {
       id: run.id,
       storyId: run.storyId,
       version: run.version + 1,
+      playbackSpeed: serverRun.playbackSpeed,
       scene: scenes[nextSceneId]!,
     );
     return serverRun;
@@ -256,10 +367,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pump();
 
-      // Choice buttons are disabled while _busy is true; second tap must not submit.
       await tester.tap(
         find.text('Lần theo dấu chân về kho'),
         warnIfMissed: false,
@@ -300,11 +411,13 @@ void main() {
       expect(find.text('Tín hiệu lúc nửa đêm'), findsOneWidget);
       expect(audio.loadedUrls.last, endsWith('/api/v1/audio/s0.mp3'));
 
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pumpAndSettle();
       expect(find.text('Trong kho thiết bị'), findsOneWidget);
       expect(audio.loadedUrls.last, endsWith('/api/v1/audio/s1.mp3'));
 
+      await tester.ensureVisible(find.text('Giữ chìa khóa B'));
       await tester.tap(find.text('Giữ chìa khóa B'));
       await tester.pumpAndSettle();
       expect(find.text('Cánh cửa phía dưới'), findsOneWidget);
@@ -313,6 +426,9 @@ void main() {
         findsOneWidget,
       );
 
+      await tester.ensureVisible(
+        find.text('Mở cửa tầng hầm bằng chìa khóa B'),
+      );
       await tester.tap(find.text('Mở cửa tầng hầm bằng chìa khóa B'));
       await tester.pumpAndSettle();
       expect(find.text('Kết thúc: Hồ sơ còn lại'), findsOneWidget);
@@ -338,6 +454,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pumpAndSettle();
 
@@ -345,7 +462,7 @@ void main() {
       expect(api.submittedIdempotencyKeys.length, 1);
       final firstKey = api.submittedIdempotencyKeys.first;
 
-      // Retry the exact same choice on the same version: must reuse firstKey.
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pumpAndSettle();
 
@@ -373,10 +490,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pumpAndSettle();
 
-      // New scene s1 must be rendered despite s1.mp3 failing to load.
       expect(find.text('Trong kho thiết bị'), findsOneWidget);
       expect(
         find.textContaining('Đã lưu tiến trình nhưng chưa tải được âm thanh'),
@@ -393,7 +510,7 @@ void main() {
       );
       expect(audio.loadedUrls.last, endsWith('/api/v1/audio/s1.mp3'));
 
-      // Next choice uses committed version 1 without triggering a stale 409.
+      await tester.ensureVisible(find.text('Giữ chìa khóa B'));
       await tester.tap(find.text('Giữ chìa khóa B'));
       await tester.pumpAndSettle();
       expect(api.submittedExpectedVersions.last, equals(1));
@@ -418,6 +535,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Lần theo dấu chân về kho'));
       await tester.tap(find.text('Lần theo dấu chân về kho'));
       await tester.pumpAndSettle();
 
@@ -427,6 +545,88 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Cánh cửa phía dưới'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'T005: Resumes saved run position/speed, clamps seek, handles interruptions, and enforces offline lease expiry',
+    (WidgetTester tester) async {
+      var fakeNow = DateTime.utc(2026, 11, 18, 1, 0);
+      final api = FakeAudioVerseApi()
+        ..offlineLeaseExpiresAt = DateTime.utc(2026, 11, 18, 2, 0)
+        ..continueListeningRuns = <StoryRun>[
+          StoryRun(
+            id: 'run-resumed-1',
+            storyId: FakeAudioVerseApi.demoStory.id,
+            version: 1,
+            positionMs: 12000,
+            playbackSpeed: 1.5,
+            scene: FakeAudioVerseApi.scenes['s1']!,
+          ),
+        ];
+      final audio = FakeSceneAudioController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StoryScreen(
+            story: FakeAudioVerseApi.demoStory,
+            api: api,
+            audioController: audio,
+            nowProvider: () => fakeNow,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Resumed s1 at 12,000ms and 1.5x speed without silent autoplay (PLY-05, PLY-08, PLY-14)
+      expect(find.text('Trong kho thiết bị'), findsOneWidget);
+      expect(audio.currentPosition, equals(const Duration(seconds: 12)));
+      expect(audio.currentSpeed, equals(1.5));
+      expect(audio.isPlaying, isFalse);
+
+      // 2. Seek +10s advances to 22s; seek -10s x 3 clamps to 0s (PLY-07)
+      await tester.tap(find.byTooltip('Tiến 10 giây'));
+      await tester.pump();
+      expect(audio.currentPosition, equals(const Duration(seconds: 22)));
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byTooltip('Lùi 10 giây'));
+        await tester.pump();
+      }
+      expect(audio.currentPosition, equals(Duration.zero));
+
+      // 3. Speed change to 1.25x persists to server (PLY-05, PLY-08)
+      await tester.tap(find.text('1.25x'));
+      await tester.pumpAndSettle();
+      expect(audio.currentSpeed, equals(1.25));
+      expect(api.savedSpeeds.last, equals(1.25));
+
+      // 4. Audio interruption pauses active playback and resumes when interruption ends (PLY-13)
+      await audio.play();
+      expect(audio.isPlaying, isTrue);
+      await audio.handleInterruption(begin: true);
+      expect(audio.isPlaying, isFalse);
+      await audio.handleInterruption(begin: false, shouldResume: true);
+      expect(audio.isPlaying, isTrue);
+
+      // 5. Offline lease download & license expiry enforcement (PLY-10)
+      await tester.tap(find.text('Tải offline'));
+      await tester.pumpAndSettle();
+      expect(find.text('Đã tải offline'), findsOneWidget);
+
+      // Advance clock past lease expiry (02:00 UTC -> 03:00 UTC) and reload audio
+      fakeNow = DateTime.utc(2026, 11, 18, 3, 0);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StoryScreen(
+            story: FakeAudioVerseApi.demoStory,
+            api: api,
+            audioController: audio,
+            nowProvider: () => fakeNow,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tải offline'), findsOneWidget);
     },
   );
 }

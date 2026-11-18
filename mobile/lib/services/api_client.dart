@@ -26,7 +26,7 @@ class AudioVerseApi {
   );
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
-    // NOT identity authentication; demo-only. Production auth is pending.
+    // NOT identity authentication; demo-only. Production auth uses Bearer token.
     'X-Demo-Actor': 'demo-local',
   };
 
@@ -61,6 +61,30 @@ class AudioVerseApi {
     await _request('/api/v1/runs/$runId') as Map<String, dynamic>,
   );
 
+  Future<List<StoryRun>> continueListening() async {
+    final data =
+        await _request('/api/v1/me/continue-listening') as List<dynamic>;
+    return data
+        .map((e) => StoryRun.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<StoryRun> saveProgress(
+    StoryRun run, {
+    required int positionMs,
+    required double playbackSpeed,
+  }) async => StoryRun.fromJson(
+    await _request(
+          '/api/v1/runs/${run.id}/progress',
+          post: {
+            'scene_id': run.scene.id,
+            'position_ms': positionMs,
+            'playback_speed': playbackSpeed,
+          },
+        )
+        as Map<String, dynamic>,
+  );
+
   Future<StoryRun> choose(
     StoryRun run,
     String choiceId,
@@ -77,7 +101,30 @@ class AudioVerseApi {
         as Map<String, dynamic>,
   );
 
+  Future<OfflineSceneLease> createOfflineLease(
+    String workId,
+    String sceneId,
+  ) async => OfflineSceneLease.fromJson(
+    await _request(
+          '/api/v1/downloads/leases',
+          post: {'work_id': workId, 'scene_id': sceneId},
+        )
+        as Map<String, dynamic>,
+  );
+
+  Future<bool> validateOfflineLease(String leaseId) async {
+    final data =
+        await _request('/api/v1/downloads/leases/$leaseId/validate')
+            as Map<String, dynamic>;
+    return (data['valid'] as bool?) ?? false;
+  }
+
   String sceneAudioUrl(String sceneId) => '$baseUrl/api/v1/audio/$sceneId.mp3';
+
+  String resolveMediaUrl(String relativeOrFullUrl) =>
+      relativeOrFullUrl.startsWith('http')
+      ? relativeOrFullUrl
+      : '$baseUrl$relativeOrFullUrl';
 
   void dispose() => _client.close();
 }

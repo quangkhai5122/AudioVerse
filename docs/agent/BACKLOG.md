@@ -7,7 +7,7 @@
 | T002 | Content rights schema, contract and evidence review design | R1 | DONE | None | Legal rights (schema & policy pass) |
 | T003 | Postgres, migrations, user auth and tenant isolation design | R1 | DONE | T002 schema (done); T001 client contract (done) | Security (auth, RBAC & migrations pass) |
 | T004 | Authenticated media streaming and signed delivery | R1 | DONE | T002 (done), T003 (done) | Rights + security (signed URL & range pass) |
-| T005 | Player lifecycle, offline/resume/background plan | R1 | READY | T001 (done), T004 (done) | Platform |
+| T005 | Player lifecycle, offline/resume/background plan | R1 | DONE (Android/Flutter; iOS needs macOS) | T001 (done), T004 (done) | Platform (resume, speed, seek, offline lease pass) |
 | T006 | Narrative AI provider adapters & schema verifier | R2 | READY | T002 (done), narrative eval design | Content rights |
 | T007 | TTS API adapters + benchmark & audio pipeline | R2 | READY | T002 (done) | Voice license |
 | T008 | Authoring CMS and content publishing gate | R2 | READY | T002 (done), T003 (done) | Provenance review |

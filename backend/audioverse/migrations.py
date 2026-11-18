@@ -187,6 +187,38 @@ MIGRATIONS: tuple[Migration, ...] = (
         );
         """,
     ),
+    Migration(
+        version=4,
+        name="004_playback_progress_library_and_offline_leases",
+        up_sql="""
+        ALTER TABLE runs ADD COLUMN position_ms INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE runs ADD COLUMN playback_speed REAL NOT NULL DEFAULT 1.0;
+
+        CREATE TABLE IF NOT EXISTS user_library (
+            user_id TEXT NOT NULL,
+            work_id TEXT NOT NULL,
+            followed INTEGER NOT NULL DEFAULT 1,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, work_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS offline_leases (
+            id TEXT PRIMARY KEY,
+            actor_id TEXT NOT NULL,
+            asset_id TEXT NOT NULL REFERENCES media_objects(asset_id),
+            work_id TEXT NOT NULL,
+            edition_id TEXT NOT NULL,
+            scene_id TEXT NOT NULL,
+            sha256 TEXT NOT NULL,
+            byte_size INTEGER NOT NULL,
+            rights_grant_version INTEGER NOT NULL,
+            cache_epoch INTEGER NOT NULL,
+            expires_at TEXT NOT NULL,
+            revoked_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        """,
+    ),
 )
 
 

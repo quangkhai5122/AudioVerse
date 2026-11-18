@@ -26,7 +26,13 @@ Base `/api/v1`; JSON UTF-8; IDs opaque. Mutations require idempotency keys and o
 | POST | `/api/v1/runs/{run_id}/choices` | body below | 200 snapshot; 409 stale/reuse; 422 invalid; 401/403/404 | Commits chained `event_hash` & snapshot |
 | GET | `/api/v1/runs/{run_id}/events` | `Bearer` or demo header | 200 event list | Ordered, includes `event_hash` |
 | POST | `/api/v1/runs/{run_id}/restore` | `Bearer` or demo header | 200 restored snapshot; 409 tamper; 404 | Deterministic event replay & hash verification (`INT-18`) |
+| POST | `/api/v1/runs/{run_id}/progress` | `{position_ms,playback_speed}` | 200 `{run_id,position_ms,playback_speed,updated_at}`; 401/404/422 | Writes back listening position & speed (`PLY-05`, `PLY-08`) |
+| POST | `/api/v1/me/library/{work_id}` | `{"followed":true}` | 200 `{work_id,followed,updated_at}`; 401/404 | Idempotent library follow/unfollow toggle (`LIB-01`) |
+| GET | `/api/v1/me/library` | `Bearer` or demo header | 200 `{items:[...]}` | Returns followed library works for actor (`LIB-01`) |
+| GET | `/api/v1/me/continue-listening` | `Bearer` or demo header | 200 `{items:[...]}` | Returns active runs ordered by `updated_at` with `position_ms` & `playback_speed` (`LIB-02`, `INT-12`) |
 | POST | `/api/v1/playback/authorize` | `{work_id,scene_id,edition_id,action,territory,ttl_seconds}` | 200 signed media grant (`url`,`token`,`expires_at`,`sha256`); 401/403/404 | Checks rights, asset quarantine & `user_entitlements` (`PLY-10`, `PLY-15`, `SEC-09`) |
+| POST | `/api/v1/downloads/leases` | `{work_id,scene_id,edition_id,territory,lease_seconds,max_bytes}` | 200 offline lease + transcript/attribution (`PLY-10`, `PLY-11`, `PLY-18`); 401/403/404 | Enforces `offline` rights, entitlement & storage quota (`OFFLINE_STORAGE_QUOTA_EXCEEDED`) |
+| GET | `/api/v1/downloads/leases/{lease_id}/validate` | `Bearer` or demo header | 200 validated lease; 401/403/404 | Rejects expired/revoked lease, revoked entitlement, `cache_epoch` mismatch or revoked `offline` rights (`PLY-10`) |
 | GET | `/api/v1/media/{asset_id}?token=...` | signed token + optional `Range` | 200 full or 206 byte-range; 401/403/416 | Revalidates token TTL, actor, session, entitlement, `cache_epoch` & rights at delivery |
 | POST | `/api/v1/admin/media/{asset_id}/invalidate` | `Bearer <token>` (staff role) | 200 `{asset_id,cache_epoch,status}` or 403 | Bumps `cache_epoch`, immediately invalidating outstanding signed URLs |
 | GET | `/api/v1/audio/{scene_id}.mp3` | scene | 200 audio; 403 if public sample disabled/quarantined; 404 | Local sample route (disabled when `allow_public_sample_audio=False`) |

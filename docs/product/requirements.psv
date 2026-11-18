@@ -15,14 +15,14 @@ CAT-03|Catalog|P1|PLANNED|Separate fixed and interactive editions|Edition includ
 CAT-04|Catalog|P1|PLANNED|Search by title narrator and tag|Results match indexed content and access policy
 CAT-05|Catalog|P1|PLANNED|Content category and mood filters|Query returns only eligible published works
 CAT-06|Catalog|P1|PLANNED|Work page with episodes and duration|Metadata matches actual audio sequence
-CAT-07|Catalog|P1|PLANNED|Creator credits and verified source label|Listener sees legally appropriate attribution
-CAT-08|Catalog|P1|PLANNED|Explicit human versus AI voice labels|Every play screen identifies synthetic narration
+CAT-07|Catalog|P1|DEMO|Creator credits and verified source label|Listener sees legally appropriate attribution
+CAT-08|Catalog|P1|DEMO|Explicit human versus AI voice labels|Every play screen identifies synthetic narration
 CAT-09|Catalog|P1|PLANNED|Published schedule and next episode|Scheduled episode not accessible before release
 CAT-10|Catalog|P1|PLANNED|Age and content warnings|Sensitive content filtered according to user settings
 CAT-11|Catalog|P2|PLANNED|Editorial featured lists and playlists|Editor changes lists with approval history
 CAT-12|Catalog|P2|PLANNED|Multilingual metadata for expansion|Locale fallback never alters canonical original text
-LIB-01|Library|P0|PLANNED|Follow work and add/remove to library|Repeated toggles reconcile deterministically
-LIB-02|Library|P1|PLANNED|Recent listened and continue listening|Resume correct work chapter and position
+LIB-01|Library|P0|DEMO|Follow work and add/remove to library|Repeated toggles reconcile deterministically
+LIB-02|Library|P1|DEMO|Recent listened and continue listening|Resume correct work chapter and position
 LIB-03|Library|P1|PLANNED|Playlist and saved titles|No duplicate item loss after sync
 LIB-04|Library|P1|PLANNED|History synced across devices|Server resolves simultaneous playback conflicts
 LIB-05|Library|P1|PLANNED|Liked and disliked works private by default|Private preferences inaccessible to other users
@@ -32,20 +32,20 @@ PLY-01|Player|P0|DEMO|Stream a local MP3 with web native controls|Browser plays 
 PLY-02|Player|P0|DEMO|Foreground Flutter MP3 scene player source|Flutter analyze widget tests and Android emulator QA passed; iOS requires macOS
 PLY-03|Player|P1|PLANNED|Background audio lockscreen media controls|Play pause seek work with screen off on devices
 PLY-04|Player|P1|PLANNED|Chapter navigation and auto-next|No skipped or repeated chapters during transition
-PLY-05|Player|P1|PLANNED|Playback speed from 0.8x to 2x|Speed consistent after resume
-PLY-06|Player|P1|PLANNED|Sleep timer and fade out|Playback stops at chosen interval
-PLY-07|Player|P1|PLANNED|Seek forward/backward increments|Seek requests stay inside audio duration
-PLY-08|Player|P1|PLANNED|Progress write-back on pause and background|Last committed position survives app restart
+PLY-05|Player|P1|DEMO|Playback speed from 0.8x to 2x|Speed consistent after resume
+PLY-06|Player|P1|DEMO|Sleep timer and fade out|Playback stops at chosen interval
+PLY-07|Player|P1|DEMO|Seek forward/backward increments|Seek requests stay inside audio duration
+PLY-08|Player|P1|DEMO|Progress write-back on pause and background|Last committed position survives app restart
 PLY-09|Player|P1|PLANNED|Reconnect after network loss|Player resumes correct byte range without duplicate billing
 PLY-10|Player|P1|DEMO|Authorized offline download|Expired or revoked license prevents new access as required
-PLY-11|Player|P1|PLANNED|Download queue retry and storage quota|Failed downloads resume without corrupt files
+PLY-11|Player|P1|DEMO|Download queue retry and storage quota|Failed downloads resume without corrupt files
 PLY-12|Player|P1|PLANNED|Accessible transcript synchronized to time|Timestamped transcript follows current playback
-PLY-13|Player|P1|PLANNED|Audio focus interruptions|Phone call pause and resume follow platform policy
-PLY-14|Player|P1|PLANNED|No silent autoplay on opening screen|User initiates playback according to platform policy
+PLY-13|Player|P1|DEMO|Audio focus interruptions|Phone call pause and resume follow platform policy
+PLY-14|Player|P1|DEMO|No silent autoplay on opening screen|User initiates playback according to platform policy
 PLY-15|Player|P1|DEMO|Protected audio URL with short expiry|Unauthorized request denied including cached expired rights
 PLY-16|Player|P2|PLANNED|Audio quality network adaptive|Playback remains stable under slow cellular bandwidth
 PLY-17|Player|P2|PLANNED|Bluetooth and car media integration|Headset controls are usable without touching device
-PLY-18|Player|P2|PLANNED|Offline episode metadata and transcript|All cached media content stays license-scoped
+PLY-18|Player|P2|DEMO|Offline episode metadata and transcript|All cached media content stays license-scoped
 INT-01|Interaction|P0|DEMO|Create persistent story run|Run id and initial scene are returned
 INT-02|Interaction|P0|DEMO|Display 2 or more authored choices|Options depend on canonical state prerequisites
 INT-03|Interaction|P0|DEMO|Apply deterministic transition and effects|Expected flag changes appear and wrong choices denied
@@ -57,7 +57,7 @@ INT-08|Interaction|P1|DEMO|Run tied to immutable story edition version|Old run r
 INT-09|Interaction|P1|PLANNED|Passive authored default at each decision|Listening can continue without mandatory prompts
 INT-10|Interaction|P1|PLANNED|Open-text player actions with constrained intent|LLM output cannot bypass allowed action grammar
 INT-11|Interaction|P1|PLANNED|Meaningful choice consequences beyond text style|State changes are reflected in later gated scenes
-INT-12|Interaction|P1|PLANNED|Run resume after app crash and device switch|Player returns exact committed scene and position
+INT-12|Interaction|P1|DEMO|Run resume after app crash and device switch|Player returns exact committed scene and position
 INT-13|Interaction|P1|PLANNED|Versioned run rewind or restart|No accidental corruption of previous route
 INT-14|Interaction|P1|PLANNED|Branch generation progress and cancellability|Cancelled jobs not billed twice
 INT-15|Interaction|P2|PLANNED|Share safe non-spoiler branch summary|Private run details not published without consent

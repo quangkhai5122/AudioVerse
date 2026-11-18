@@ -615,3 +615,180 @@ def deliver_signed_media(
         headers=headers,
         bytes_served=total_size,
     )
+
+
+def create_offline_lease(
+    db_path: Path,
+    *,
+    secret: str,
+    manifest: RightsManifest,
+    story: dict[str, Any],
+    principal: Principal,
+    work_id: str,
+    scene_id: str,
+    edition_id: str | None = None,
+    territory: str = "VN",
+    lease_hours: int = 48,
+    max_quota_bytes: int = 50 * 1024 * 1024,
+    require_entitlement: bool = False,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Issue an authorized, quota-checked, license-scoped offline download lease (`PLY-10`, `PLY-11`, `PLY-18`)."""
+    check_time = now or datetime.now(UTC)
+    auth_grant = authorize_playback(
+        db_path,
+        secret=secret,
+        manifest=manifest,
+        principal=principal,
+        work_id=work_id,
+        scene_id=scene_id,
+        action="offline",
+        edition_id=edition_id,
+        territory=territory,
+        ttl_seconds=300,
+        require_entitlement=require_entitlement,
+        now=check_time,
+    )
+    asset_id = auth_grant["asset_id"]
+    byte_size = int(auth_grant["byte_size"])
+    lease_exp = check_time + timedelta(hours=lease_hours)
+    if manifest.grant.expires_at is not None:
+        grant_exp = manifest.grant.expires_at.astimezone(UTC)
+        if grant_exp < lease_exp:
+            lease_exp = grant_exp
+
+    with _connect(db_path) as con:
+        con.execute("BEGIN IMMEDIATE")
+        try:
+            # Calculate active storage quota for this actor (excluding current asset if refreshing)
+            quota_row = con.execute(
+                """
+                SELECT COALESCE(SUM(byte_size), 0) AS used_bytes
+                FROM offline_leases
+                WHERE actor_id=? AND asset_id!=? AND revoked_at IS NULL AND expires_at > ?
+                """,
+                (principal.actor_id, asset_id, check_time.isoformat()),
+            ).fetchone()
+            used_bytes = int(quota_row["used_bytes"])
+            if used_bytes + byte_size > max_quota_bytes:
+                raise MediaAccessError(
+                    403,
+                    "OFFLINE_STORAGE_QUOTA_EXCEEDED",
+                    f"Offline storage quota exceeded ({used_bytes + byte_size} > {max_quota_bytes} bytes)",
+                )
+
+            obj = con.execute(
+                "SELECT * FROM media_objects WHERE asset_id=?", (asset_id,)
+            ).fetchone()
+            lease_id = str(uuid4())
+            con.execute(
+                """
+                INSERT INTO offline_leases(
+                    id, actor_id, asset_id, work_id, edition_id, scene_id,
+                    sha256, byte_size, rights_grant_version, cache_epoch, expires_at
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    lease_id,
+                    principal.actor_id,
+                    asset_id,
+                    work_id,
+                    auth_grant["edition_id"],
+                    scene_id,
+                    auth_grant["sha256"],
+                    byte_size,
+                    manifest.grant.version,
+                    int(obj["cache_epoch"]),
+                    lease_exp.isoformat(),
+                ),
+            )
+            con.execute("COMMIT")
+        except Exception:
+            if con.in_transaction:
+                con.execute("ROLLBACK")
+            raise
+
+    scene_data = story.get("scenes", {}).get(scene_id, {})
+    return {
+        "lease_id": lease_id,
+        "asset_id": asset_id,
+        "work_id": work_id,
+        "edition_id": auth_grant["edition_id"],
+        "scene_id": scene_id,
+        "scene_title": scene_data.get("title", ""),
+        "transcript": scene_data.get("text", ""),
+        "attribution": manifest.grant.chain_of_title.attribution_text,
+        "voice_label": manifest.grant.chain_of_title.voice_label,
+        "download_url": auth_grant["url"],
+        "token": auth_grant["token"],
+        "sha256": auth_grant["sha256"],
+        "byte_size": byte_size,
+        "lease_expires_at": lease_exp.isoformat(),
+    }
+
+
+def validate_offline_lease(
+    db_path: Path,
+    *,
+    manifest: RightsManifest,
+    principal: Principal,
+    lease_id: str,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Verify whether an offline download lease remains valid under current rights and expiry (`PLY-10`)."""
+    check_time = now or datetime.now(UTC)
+    with _connect(db_path) as con:
+        lease = con.execute(
+            "SELECT * FROM offline_leases WHERE id=? AND actor_id=?",
+            (lease_id, principal.actor_id),
+        ).fetchone()
+        if lease is None:
+            raise MediaAccessError(404, "OFFLINE_LEASE_NOT_FOUND", "Offline lease not found")
+        if lease["revoked_at"] is not None:
+            raise MediaAccessError(
+                403, "OFFLINE_LEASE_REVOKED", "Offline lease has been revoked"
+            )
+        exp = datetime.fromisoformat(lease["expires_at"])
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=UTC)
+        if check_time >= exp:
+            raise MediaAccessError(
+                403, "OFFLINE_LEASE_EXPIRED", "Offline download lease has expired"
+            )
+        obj = con.execute(
+            "SELECT * FROM media_objects WHERE asset_id=?", (lease["asset_id"],)
+        ).fetchone()
+        if obj is None or int(obj["cache_epoch"]) != int(lease["cache_epoch"]):
+            raise MediaAccessError(
+                403,
+                "MEDIA_CACHE_INVALIDATED",
+                "Offline asset was invalidated by a rights/cache update",
+            )
+        if int(lease["rights_grant_version"]) != manifest.grant.version:
+            raise MediaAccessError(
+                403,
+                "RIGHTS_VERSION_MISMATCH",
+                "Offline lease rights grant version is stale",
+            )
+
+    try:
+        assert_permission(
+            manifest,
+            "offline",
+            scene_id=lease["scene_id"],
+            edition_id=lease["edition_id"],
+            at_time=check_time,
+        )
+    except RightsViolationError as exc:
+        raise MediaAccessError(403, exc.code, exc.reason) from exc
+
+    return {
+        "lease_id": lease["id"],
+        "asset_id": lease["asset_id"],
+        "scene_id": lease["scene_id"],
+        "edition_id": lease["edition_id"],
+        "sha256": lease["sha256"],
+        "valid": True,
+        "expires_at": lease["expires_at"],
+    }
+

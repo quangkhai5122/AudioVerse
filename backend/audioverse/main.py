@@ -39,9 +39,11 @@ from audioverse.engine import InvalidChoice
 from audioverse.media import (
     MediaAccessError,
     authorize_playback,
+    create_offline_lease,
     deliver_signed_media,
     invalidate_media_cache,
     sync_media_registry,
+    validate_offline_lease,
 )
 from audioverse.rights import RightsViolationError, renewal_warning_level
 from audioverse.settings import Settings
@@ -53,9 +55,13 @@ from audioverse.storage import (
     choose,
     create_run,
     event_history,
+    get_library_items,
     get_run,
     init_db,
+    list_continue_listening,
     restore_run_from_events,
+    set_library_follow,
+    update_playback_progress,
 )
 
 
@@ -105,6 +111,28 @@ class PlaybackAuthorizeBody(BaseModel):
     action: Literal["stream", "offline"] = "stream"
     territory: str = Field(default="VN", min_length=2, max_length=32)
     ttl_seconds: int = Field(default=300, ge=1, le=900)
+
+
+class ProgressBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scene_id: str = Field(min_length=1, max_length=128)
+    position_ms: int = Field(ge=0, le=86_400_000)
+    playback_speed: float = Field(default=1.0, ge=0.8, le=2.0)
+
+
+class LibraryFollowBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    followed: bool = True
+
+
+class OfflineLeaseBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    work_id: str = Field(min_length=1, max_length=128)
+    scene_id: str = Field(min_length=1, max_length=128)
+    edition_id: str | None = Field(default=None, min_length=1, max_length=128)
+    territory: str = Field(default="VN", min_length=2, max_length=32)
+    lease_hours: int = Field(default=48, ge=1, le=720)
+    max_quota_bytes: int = Field(default=50 * 1024 * 1024, ge=1024, le=500 * 1024 * 1024)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -438,6 +466,110 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 exc.status_code, {"code": exc.code, "message": exc.message}
             ) from None
         return {"asset_id": asset_id, "cache_epoch": new_epoch, "status": "invalidated"}
+
+    # --- Player Lifecycle, Library Follow, Progress Resume & Offline Leases (T005) ---
+
+    @app.post("/api/v1/me/library/{work_id}")
+    def me_follow_work(
+        work_id: str,
+        body: LibraryFollowBody,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        if work_id != story["id"]:
+            raise HTTPException(404, "Work not found")
+        return set_library_follow(
+            cfg.db_path,
+            principal.actor_id,
+            work_id,
+            body.followed,
+        )
+
+    @app.get("/api/v1/me/library")
+    def me_library(
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        return get_library_items(cfg.db_path, principal.actor_id)
+
+    @app.get("/api/v1/me/continue-listening")
+    def me_continue_listening(
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        return list_continue_listening(cfg.db_path, story, principal.actor_id)
+
+    @app.post("/api/v1/runs/{run_id}/progress")
+    def save_run_progress(
+        run_id: str,
+        body: ProgressBody,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        try:
+            return update_playback_progress(
+                cfg.db_path,
+                story,
+                principal.actor_id,
+                run_id,
+                scene_id=body.scene_id,
+                position_ms=body.position_ms,
+                playback_speed=body.playback_speed,
+            )
+        except RunNotFound:
+            raise HTTPException(404, "Run not found") from None
+        except VersionConflict as exc:
+            raise HTTPException(409, str(exc)) from None
+
+    @app.post("/api/v1/downloads/leases", status_code=201)
+    def issue_offline_lease(
+        body: OfflineLeaseBody,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        try:
+            return create_offline_lease(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                manifest=manifest,
+                story=story,
+                principal=principal,
+                work_id=body.work_id,
+                scene_id=body.scene_id,
+                edition_id=body.edition_id,
+                territory=body.territory,
+                lease_hours=body.lease_hours,
+                max_quota_bytes=body.max_quota_bytes,
+                require_entitlement=cfg.require_entitlement,
+            )
+        except MediaAccessError as exc:
+            raise HTTPException(
+                exc.status_code, {"code": exc.code, "message": exc.message}
+            ) from None
+
+    @app.get("/api/v1/downloads/leases/{lease_id}/validate")
+    def check_offline_lease(
+        lease_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        try:
+            return validate_offline_lease(
+                cfg.db_path,
+                manifest=manifest,
+                principal=principal,
+                lease_id=lease_id,
+            )
+        except MediaAccessError as exc:
+            raise HTTPException(
+                exc.status_code, {"code": exc.code, "message": exc.message}
+            ) from None
 
     # --- Story Runs & Choices (Scoped per authenticated user or demo actor) ---
 

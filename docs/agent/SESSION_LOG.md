@@ -165,3 +165,26 @@
 - **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
 - **Risks / unresolved questions:** Mobile player lifecycle, persistent progress resume, speed/sleep controls, and license-scoped offline download manager are next in `T005`.
 - **Task state and next exact action:** `T004` DONE on `main`. Next task: **T005 — Player lifecycle, offline/resume/background plan** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue`.
+
+## 2026-11-18 08:45 +07 — T005 Player Lifecycle, Progress Resume, Speed/Sleep/Seek Controls & Offline Leases
+- **Branch/commit baseline:** `main` at `cfd6af5728486a04234b150b7dd5845a6bd273fe` (`origin/main`), clean working tree.
+- **Objective and exact files changed:**
+  - Updated `backend/audioverse/migrations.py` with Migration `004_playback_progress_library_and_offline_leases` (`position_ms` and `playback_speed` columns on `runs`, `user_library` follow table, and `offline_leases` table).
+  - Updated `backend/audioverse/storage.py` (`update_playback_progress`, `list_continue_listening`, `set_library_follow`, `get_library_items`, and reset of `position_ms=0` on scene transition while preserving `playback_speed`).
+  - Updated `backend/audioverse/media.py` (`create_offline_lease` enforcing `offline` rights, entitlement, and storage quota `OFFLINE_STORAGE_QUOTA_EXCEEDED`, returning signed download URL + transcript + attribution + `lease_expires_at`; `validate_offline_lease` verifying lease expiry, revocation, `cache_epoch`, `rights_grant_version`, and live `offline` rights).
+  - Updated `backend/audioverse/main.py` with `POST /api/v1/runs/{run_id}/progress`, `POST /api/v1/me/library/{work_id}`, `GET /api/v1/me/library`, `GET /api/v1/me/continue-listening`, `POST /api/v1/downloads/leases`, and `GET /api/v1/downloads/leases/{lease_id}/validate`.
+  - Created `backend/tests/test_player_lifecycle.py` (2 integration tests covering library follow toggles, playback progress write-back, continue-listening resume, offline lease quota enforcement, and lease expiry/entitlement revocation).
+  - Fixed `web/app.js` audit finding `A08` (`render(current, true)` preserves status messages on transport failure, retains pending `idempotency_key`, and auto-refreshes run state on HTTP `409`).
+  - Updated `mobile/lib/models/story_models.dart`, `mobile/lib/services/scene_audio_controller.dart`, `mobile/lib/services/api_client.dart`, `mobile/lib/screens/story_screen.dart` (`WidgetsBindingObserver` background pause write-back, automatic run/position/speed resume via `continueListening()`, `-10s`/`+10s` seek clamped to duration, `0.8x`–`2.0x` playback speed selector, sleep timer, audio focus interruption pause/resume, offline lease download & expiry validation), and `mobile/test/app_smoke_test.dart` (7 deterministic widget tests).
+  - Updated `CAT-07`, `CAT-08`, `LIB-01`, `LIB-02`, `PLY-05`, `PLY-06`, `PLY-07`, `PLY-08`, `PLY-11`, `PLY-13`, `PLY-14`, `PLY-18`, and `INT-12` from `PLANNED` to `DEMO` in `docs/product/requirements.psv` and regenerated `docs/product/FUNCTIONAL_SPEC.md`. Updated `docs/engineering/API.md`, `docs/operations/TEST_STRATEGY.md`, `docs/tasks/T005_PLAYER_LIFECYCLE.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/CURRENT_TASK.md`, `docs/agent/BACKLOG.md`, `CHANGELOG.md`, and `SHA256SUMS.txt`.
+- **Decisions / ADR reference:** Implements ADR-002 (server-canonical progress & run state), ADR-003 (Flutter Android-first testing), and `MEDIA_DELIVERY.md` (offline leases revalidated against expiry, `cache_epoch`, entitlement, and live `offline` rights).
+- **Tests RUN:**
+  - `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"` => **35 passed, 1 warning**.
+  - `.\.venv\Scripts\python.exe scripts/check_repo.py` => `Integrity PASS: 11 scenes, 182 requirements, assets and agent docs`.
+  - `.\.venv\Scripts\python.exe -m compileall -q backend scripts` => exit 0.
+  - `.\.venv\Scripts\python.exe -m ruff check backend scripts` => `All checks passed!`.
+  - `node --check web/app.js` => exit 0.
+  - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test -r expanded` (in `mobile/`) => `No issues found!`, **7 passed** (`All tests passed!`).
+- **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
+- **Risks / unresolved questions:** R1 foundation (`T001`–`T005`) is now complete on Android/backend/web; R2 narrative AI adapters and strict schema verification are next in `T006`.
+- **Task state and next exact action:** `T005` DONE on `main`. Next task: **T006 — Narrative AI provider adapters & schema verifier** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue`.

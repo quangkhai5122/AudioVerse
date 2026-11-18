@@ -117,12 +117,17 @@ def init_db(path: Path, initial_story: dict[str, Any] | None = None) -> list[int
 
 def _run_output(row: sqlite3.Row, story: dict[str, Any]) -> dict[str, Any]:
     flags = json.loads(row["flags_json"])
-    edition_id = row["edition_id"] if "edition_id" in row.keys() else _default_edition_id(story)
+    keys = row.keys()
+    edition_id = row["edition_id"] if "edition_id" in keys else _default_edition_id(story)
+    pos_ms = int(row["position_ms"]) if "position_ms" in keys else 0
+    speed = float(row["playback_speed"]) if "playback_speed" in keys else 1.0
     return {
         "run_id": row["id"],
         "story_id": row["story_id"],
         "edition_id": edition_id,
         "version": row["version"],
+        "position_ms": pos_ms,
+        "playback_speed": speed,
         "flags": flags,
         "scene": visible_scene(story, row["scene_id"], flags),
     }
@@ -235,7 +240,8 @@ def choose(
         con.execute(
             """
             UPDATE runs
-            SET scene_id=?, flags_json=?, version=?, state_checksum=?, updated_at=CURRENT_TIMESTAMP
+            SET scene_id=?, flags_json=?, version=?, position_ms=0, state_checksum=?,
+                updated_at=CURRENT_TIMESTAMP
             WHERE id=?
             """,
             (t.target, flags_serialized, next_version, state_csum, rid),
@@ -356,3 +362,122 @@ def restore_run_from_events(
         )
         restored_row = con.execute("SELECT * FROM runs WHERE id=?", (rid,)).fetchone()
     return _run_output(restored_row, pinned_story)
+
+
+def update_playback_progress(
+    path: Path,
+    story: dict[str, Any],
+    actor: str,
+    rid: str,
+    *,
+    scene_id: str,
+    position_ms: int,
+    playback_speed: float = 1.0,
+) -> dict[str, Any]:
+    """Persist playback position (`position_ms`) and `playback_speed` for `rid` (`PLY-05`, `PLY-08`)."""
+    if position_ms < 0:
+        raise ValueError("position_ms must be non-negative")
+    if playback_speed < 0.8 or playback_speed > 2.0:
+        raise ValueError("playback_speed must be between 0.8 and 2.0")
+    with _connect(path) as con:
+        con.execute("BEGIN IMMEDIATE")
+        try:
+            row = con.execute(
+                "SELECT * FROM runs WHERE id=? AND demo_actor=?", (rid, actor)
+            ).fetchone()
+            if row is None or row["story_id"] != story["id"]:
+                raise RunNotFound()
+            if row["scene_id"] != scene_id:
+                raise VersionConflict(
+                    f"Run is on scene '{row['scene_id']}', cannot save progress for '{scene_id}'"
+                )
+            con.execute(
+                """
+                UPDATE runs
+                SET position_ms=?, playback_speed=?, updated_at=CURRENT_TIMESTAMP
+                WHERE id=?
+                """,
+                (position_ms, round(playback_speed, 2), rid),
+            )
+            updated = con.execute("SELECT * FROM runs WHERE id=?", (rid,)).fetchone()
+            pinned_story = _resolve_edition_story(con, updated["edition_id"], story)
+            con.execute("COMMIT")
+        except Exception:
+            if con.in_transaction:
+                con.execute("ROLLBACK")
+            raise
+    return _run_output(updated, pinned_story)
+
+
+def list_continue_listening(
+    path: Path,
+    story: dict[str, Any],
+    actor: str,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Return recent runs with saved scene & playback position (`LIB-02`, `INT-12`)."""
+    with _connect(path) as con:
+        rows = con.execute(
+            """
+            SELECT * FROM runs
+            WHERE demo_actor=?
+            ORDER BY updated_at DESC, rowid DESC
+            LIMIT ?
+            """,
+            (actor, limit),
+        ).fetchall()
+        items: list[dict[str, Any]] = []
+        for r in rows:
+            pinned_story = _resolve_edition_story(con, r["edition_id"], story)
+            out = _run_output(r, pinned_story)
+            out["updated_at"] = r["updated_at"]
+            items.append(out)
+    return items
+
+
+def set_library_follow(
+    path: Path,
+    actor: str,
+    work_id: str,
+    followed: bool,
+) -> dict[str, Any]:
+    """Deterministically set follow state for `(actor, work_id)` (`LIB-01`)."""
+    with _connect(path) as con:
+        con.execute(
+            """
+            INSERT INTO user_library(user_id, work_id, followed, updated_at)
+            VALUES(?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id, work_id) DO UPDATE SET
+                followed=excluded.followed,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (actor, work_id, int(followed)),
+        )
+        row = con.execute(
+            "SELECT * FROM user_library WHERE user_id=? AND work_id=?",
+            (actor, work_id),
+        ).fetchone()
+    return {
+        "user_id": row["user_id"],
+        "work_id": row["work_id"],
+        "followed": bool(row["followed"]),
+        "updated_at": row["updated_at"],
+    }
+
+
+def get_library_items(path: Path, actor: str) -> list[dict[str, Any]]:
+    with _connect(path) as con:
+        rows = con.execute(
+            "SELECT * FROM user_library WHERE user_id=? AND followed=1 ORDER BY updated_at DESC",
+            (actor,),
+        ).fetchall()
+    return [
+        {
+            "user_id": r["user_id"],
+            "work_id": r["work_id"],
+            "followed": bool(r["followed"]),
+            "updated_at": r["updated_at"],
+        }
+        for r in rows
+    ]
+

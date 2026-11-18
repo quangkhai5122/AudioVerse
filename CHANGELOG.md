@@ -1,5 +1,11 @@
 # Changelog
 
+## T005 player lifecycle, progress resume, speed/sleep/seek controls & offline leases — 2026-11-18
+- Added Migration `004_playback_progress_library_and_offline_leases` (`position_ms` & `playback_speed` on `runs`, `user_library` follow table, `offline_leases` table).
+- Implemented playback progress write-back (`POST /api/v1/runs/{run_id}/progress`), continue-listening resume (`GET /api/v1/me/continue-listening`), library follow toggles (`POST /api/v1/me/library/{work_id}`, `GET /api/v1/me/library`), and license-scoped offline lease creation/validation (`POST /api/v1/downloads/leases`, `GET /api/v1/downloads/leases/{lease_id}/validate`) enforcing `offline` rights, entitlement status, storage quota (`OFFLINE_STORAGE_QUOTA_EXCEEDED`), and lease expiry (`OFFLINE_LEASE_EXPIRED`) (`CAT-07`, `CAT-08`, `LIB-01`, `LIB-02`, `PLY-05`–`PLY-08`, `PLY-11`, `PLY-13`, `PLY-14`, `PLY-18`, `INT-12`).
+- Updated Flutter `StoryScreen` and `SceneAudioController` with `WidgetsBindingObserver` background pause write-back, automatic run/position/speed resume, `-10s`/`+10s` seek clamped to duration, `0.8x`–`2.0x` playback speed selector, sleep timer, audio focus interruption handling, and offline lease expiry validation; fixed `web/app.js` `A08` error preservation and `409` refresh.
+- Expanded test suite to 35 passing backend tests and 7 passing Flutter widget tests.
+
 ## T004 authenticated media streaming & signed delivery — 2026-11-18
 - Implemented private audio object registry (`media_objects`), `user_entitlements` (`stream` vs `offline`), redacted `media_delivery_logs`, short-lived HMAC-SHA256 signed media authorization (`POST /api/v1/playback/authorize`), and signed Range-capable delivery (`GET /api/v1/media/{asset_id}?token=...`) in `backend/audioverse/media.py` (`PLY-10`, `PLY-15`, `SEC-09`).
 - Revalidated token TTL, signature, actor binding, active device session (honoring logout immediately), entitlement status, `cache_epoch` (`POST /api/v1/admin/media/{asset_id}/invalidate`), rights version, and live rights/quarantine/takedown status at delivery time.
