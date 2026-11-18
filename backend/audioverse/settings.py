@@ -19,6 +19,8 @@ class Settings:
     web_path: Path = ROOT / "web"
     auth_secret: str = "demo-local-hmac-secret-do-not-use-in-prod-2026"
     allow_demo_header: bool = True
+    allow_public_sample_audio: bool = True
+    require_entitlement: bool = False
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -30,9 +32,21 @@ class Settings:
             "true",
             "yes",
         }
+        allow_pub_audio = os.getenv("AUDIOVERSE_ALLOW_PUBLIC_SAMPLE_AUDIO", "true").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        req_ent = os.getenv("AUDIOVERSE_REQUIRE_ENTITLEMENT", "false").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
         return cls(
             env=env,
             db_path=Path(os.getenv("AUDIOVERSE_DB_PATH", str(cls.db_path))).resolve(),
             auth_secret=os.getenv("AUDIOVERSE_AUTH_SECRET", cls.auth_secret),
             allow_demo_header=allow_demo,
+            allow_public_sample_audio=allow_pub_audio,
+            require_entitlement=req_ent,
         )

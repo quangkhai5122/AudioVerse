@@ -1,14 +1,14 @@
-"""AudioVerse FastAPI application with T002 rights provenance and T003 auth/RBAC/migrations.
+"""AudioVerse FastAPI application with T002 rights, T003 auth/RBAC/migrations, and T004 secure media.
 
 Supports Bearer token authentication, device sessions, guest-to-account migration,
-personal data export/deletion, RBAC audit logs, and deterministic event replay recovery,
-while preserving `X-Demo-Actor` compatibility when `Settings.allow_demo_header=True`.
+personal data export/deletion, RBAC audit logs, deterministic event replay recovery,
+and short-lived HMAC-signed media authorization & Range delivery (`T004`).
 """
 import re
 from contextlib import asynccontextmanager
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import FastAPI, Header, HTTPException, Response
+from fastapi import FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -36,6 +36,13 @@ from audioverse.content import (
     validate_story,
 )
 from audioverse.engine import InvalidChoice
+from audioverse.media import (
+    MediaAccessError,
+    authorize_playback,
+    deliver_signed_media,
+    invalidate_media_cache,
+    sync_media_registry,
+)
 from audioverse.rights import RightsViolationError, renewal_warning_level
 from audioverse.settings import Settings
 from audioverse.storage import (
@@ -90,6 +97,16 @@ class MigrateGuestBody(BaseModel):
     guest_actor: str = Field(min_length=4, max_length=64, pattern=r"^[a-zA-Z0-9_-]{4,64}$")
 
 
+class PlaybackAuthorizeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    work_id: str = Field(min_length=1, max_length=128)
+    scene_id: str = Field(min_length=1, max_length=128)
+    edition_id: str | None = Field(default=None, min_length=1, max_length=128)
+    action: Literal["stream", "offline"] = "stream"
+    territory: str = Field(default="VN", min_length=2, max_length=32)
+    ttl_seconds: int = Field(default=300, ge=1, le=900)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     cfg = settings or Settings.from_env()
     if cfg.env != "demo":
@@ -107,6 +124,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         init_db(cfg.db_path, initial_story=story)
+        sync_media_registry(cfg.db_path, manifest, cfg.media_path)
         yield
 
     app = FastAPI(title="AudioVerse — Local Demo API", version="0.1.0", lifespan=lifespan)
@@ -329,6 +347,98 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "role": principal.role,
         }
 
+    # --- Authenticated Media Streaming & Signed Delivery (T004) ---
+
+    @app.post("/api/v1/playback/authorize")
+    def playback_authorize(
+        body: PlaybackAuthorizeBody,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str, Header()] = "demo-local",
+    ):
+        principal = resolve_principal(authorization, x_demo_actor)
+        try:
+            return authorize_playback(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                manifest=manifest,
+                principal=principal,
+                work_id=body.work_id,
+                scene_id=body.scene_id,
+                action=body.action,
+                edition_id=body.edition_id,
+                territory=body.territory,
+                ttl_seconds=body.ttl_seconds,
+                require_entitlement=cfg.require_entitlement,
+            )
+        except MediaAccessError as exc:
+            raise HTTPException(
+                exc.status_code, {"code": exc.code, "message": exc.message}
+            ) from None
+
+    @app.get("/api/v1/media/{asset_id}")
+    def serve_signed_media(
+        asset_id: str,
+        token: Annotated[str, Query(min_length=16)],
+        range_hdr: Annotated[str | None, Header(alias="Range")] = None,
+        authorization: Annotated[str | None, Header()] = None,
+        x_demo_actor: Annotated[str | None, Header()] = None,
+    ):
+        caller_actor: str | None = None
+        if authorization is not None or x_demo_actor is not None:
+            principal = resolve_principal(
+                authorization, x_demo_actor or "demo-local"
+            )
+            caller_actor = principal.actor_id
+
+        try:
+            result = deliver_signed_media(
+                cfg.db_path,
+                secret=cfg.auth_secret,
+                manifest=manifest,
+                media_dir=cfg.media_path,
+                asset_id=asset_id,
+                token=token,
+                caller_actor_id=caller_actor,
+                range_header=range_hdr,
+                require_entitlement=cfg.require_entitlement,
+            )
+        except MediaAccessError as exc:
+            raise HTTPException(
+                exc.status_code,
+                {"code": exc.code, "message": exc.message},
+                headers={"Cache-Control": "no-store"},
+            ) from None
+
+        return Response(
+            content=result.data,
+            status_code=result.status_code,
+            media_type=result.content_type,
+            headers=result.headers,
+        )
+
+    @app.post("/api/v1/admin/media/{asset_id}/invalidate")
+    def admin_invalidate_media(
+        asset_id: str,
+        authorization: Annotated[str | None, Header()] = None,
+    ):
+        principal = resolve_principal(authorization, require_token=True)
+        try:
+            require_role(
+                cfg.db_path,
+                principal,
+                STAFF_REVIEWER_ROLES,
+                action="INVALIDATE_MEDIA_CACHE",
+                target_id=asset_id,
+            )
+            new_epoch = invalidate_media_cache(cfg.db_path, asset_id=asset_id)
+        except ForbiddenError as exc:
+            raise HTTPException(403, {"code": exc.code, "message": exc.message}) from None
+        except MediaAccessError as exc:
+            raise HTTPException(
+                exc.status_code, {"code": exc.code, "message": exc.message}
+            ) from None
+        return {"asset_id": asset_id, "cache_epoch": new_epoch, "status": "invalidated"}
+
     # --- Story Runs & Choices (Scoped per authenticated user or demo actor) ---
 
     @app.post("/api/v1/runs", status_code=201)
@@ -414,6 +524,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/v1/audio/{scene_id}.mp3")
     def stream_demo(scene_id: str):
+        if not cfg.allow_public_sample_audio:
+            raise HTTPException(
+                403,
+                {
+                    "code": "PUBLIC_SAMPLE_ROUTE_DISABLED",
+                    "message": "Use POST /api/v1/playback/authorize for signed media delivery",
+                },
+            )
         if scene_id not in story["scenes"]:
             raise HTTPException(404, "Scene not found")
         enforce_right("stream", scene_id=scene_id)

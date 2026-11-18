@@ -26,7 +26,10 @@ Base `/api/v1`; JSON UTF-8; IDs opaque. Mutations require idempotency keys and o
 | POST | `/api/v1/runs/{run_id}/choices` | body below | 200 snapshot; 409 stale/reuse; 422 invalid; 401/403/404 | Commits chained `event_hash` & snapshot |
 | GET | `/api/v1/runs/{run_id}/events` | `Bearer` or demo header | 200 event list | Ordered, includes `event_hash` |
 | POST | `/api/v1/runs/{run_id}/restore` | `Bearer` or demo header | 200 restored snapshot; 409 tamper; 404 | Deterministic event replay & hash verification (`INT-18`) |
-| GET | `/api/v1/audio/{scene_id}.mp3` | scene | 200 audio; 403 if stream right/asset quarantined; 404 | Per-scene `AssetLicense` & `stream` gate; demo sample media |
+| POST | `/api/v1/playback/authorize` | `{work_id,scene_id,edition_id,action,territory,ttl_seconds}` | 200 signed media grant (`url`,`token`,`expires_at`,`sha256`); 401/403/404 | Checks rights, asset quarantine & `user_entitlements` (`PLY-10`, `PLY-15`, `SEC-09`) |
+| GET | `/api/v1/media/{asset_id}?token=...` | signed token + optional `Range` | 200 full or 206 byte-range; 401/403/416 | Revalidates token TTL, actor, session, entitlement, `cache_epoch` & rights at delivery |
+| POST | `/api/v1/admin/media/{asset_id}/invalidate` | `Bearer <token>` (staff role) | 200 `{asset_id,cache_epoch,status}` or 403 | Bumps `cache_epoch`, immediately invalidating outstanding signed URLs |
+| GET | `/api/v1/audio/{scene_id}.mp3` | scene | 200 audio; 403 if public sample disabled/quarantined; 404 | Local sample route (disabled when `allow_public_sample_audio=False`) |
 | GET | `/` | none | 200 HTML | Browser demo |
 
 ### POST choice example

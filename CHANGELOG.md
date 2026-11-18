@@ -1,5 +1,10 @@
 # Changelog
 
+## T004 authenticated media streaming & signed delivery — 2026-11-18
+- Implemented private audio object registry (`media_objects`), `user_entitlements` (`stream` vs `offline`), redacted `media_delivery_logs`, short-lived HMAC-SHA256 signed media authorization (`POST /api/v1/playback/authorize`), and signed Range-capable delivery (`GET /api/v1/media/{asset_id}?token=...`) in `backend/audioverse/media.py` (`PLY-10`, `PLY-15`, `SEC-09`).
+- Revalidated token TTL, signature, actor binding, active device session (honoring logout immediately), entitlement status, `cache_epoch` (`POST /api/v1/admin/media/{asset_id}/invalidate`), rights version, and live rights/quarantine/takedown status at delivery time.
+- Expanded backend test suite to 33 passing tests.
+
 ## T003 user authentication, RBAC, migrations, edition pinning & replay recovery — 2026-11-18
 - Implemented scrypt password hashing, HMAC-SHA256 Bearer tokens, revocable `device_sessions`, token refresh rotation, idempotent guest-to-account migration, personal data export, account deletion/anonymization, and RBAC with hash-chained `security_audit_log` in `backend/audioverse/auth.py` (`ACC-01`–`ACC-07`, `ACC-10`, `SEC-01`, `SEC-02`, `SEC-07`, `SEC-12`, `SEC-14`).
 - Added versioned schema migrations (`schema_migrations`), DB-level `BEFORE UPDATE/DELETE` immutability triggers on `events` and `security_audit_log`, immutable `edition_id` pinning (`editions`, `INT-08`), `story_snapshots`, deterministic event replay recovery (`POST /api/v1/runs/{run_id}/restore`, `INT-18`), and PostgreSQL target DDL with Row-Level Security (`RLS`).

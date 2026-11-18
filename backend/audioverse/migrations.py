@@ -144,6 +144,49 @@ MIGRATIONS: tuple[Migration, ...] = (
         END;
         """,
     ),
+    Migration(
+        version=3,
+        name="003_private_media_registry_entitlements_and_delivery_logs",
+        up_sql="""
+        CREATE TABLE IF NOT EXISTS media_objects (
+            asset_id TEXT PRIMARY KEY,
+            work_id TEXT NOT NULL,
+            edition_id TEXT NOT NULL,
+            scene_id TEXT NOT NULL,
+            storage_relpath TEXT NOT NULL,
+            sha256 TEXT NOT NULL,
+            byte_size INTEGER NOT NULL,
+            content_type TEXT NOT NULL DEFAULT 'audio/mpeg',
+            rights_grant_id TEXT NOT NULL,
+            rights_grant_version INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'published',
+            cache_epoch INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS user_entitlements (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            work_id TEXT NOT NULL,
+            allow_stream INTEGER NOT NULL DEFAULT 1,
+            allow_offline INTEGER NOT NULL DEFAULT 0,
+            expires_at TEXT NOT NULL,
+            revoked_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS media_delivery_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            actor_id TEXT NOT NULL,
+            asset_id TEXT NOT NULL,
+            action TEXT NOT NULL,
+            status_code INTEGER NOT NULL,
+            bytes_served INTEGER NOT NULL DEFAULT 0,
+            detail TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        """,
+    ),
 )
 
 

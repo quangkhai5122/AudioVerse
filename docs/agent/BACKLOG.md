@@ -6,8 +6,8 @@
 | T001 | Native Flutter build, test and foreground player | R1 | DONE (Android; iOS needs macOS) | Flutter 3.50.0 + Android SDK 36/AVD 35 verified | Device QA (Android pass) |
 | T002 | Content rights schema, contract and evidence review design | R1 | DONE | None | Legal rights (schema & policy pass) |
 | T003 | Postgres, migrations, user auth and tenant isolation design | R1 | DONE | T002 schema (done); T001 client contract (done) | Security (auth, RBAC & migrations pass) |
-| T004 | Authenticated media streaming and signed delivery | R1 | READY | T002 (done), T003 (done) | Rights + security |
-| T005 | Player lifecycle, offline/resume/background plan | R1 | PLANNED | T001 (done), T004 | Platform |
+| T004 | Authenticated media streaming and signed delivery | R1 | DONE | T002 (done), T003 (done) | Rights + security (signed URL & range pass) |
+| T005 | Player lifecycle, offline/resume/background plan | R1 | READY | T001 (done), T004 (done) | Platform |
 | T006 | Narrative AI provider adapters & schema verifier | R2 | READY | T002 (done), narrative eval design | Content rights |
 | T007 | TTS API adapters + benchmark & audio pipeline | R2 | READY | T002 (done) | Voice license |
 | T008 | Authoring CMS and content publishing gate | R2 | READY | T002 (done), T003 (done) | Provenance review |

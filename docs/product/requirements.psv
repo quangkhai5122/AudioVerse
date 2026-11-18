@@ -37,12 +37,12 @@ PLY-06|Player|P1|PLANNED|Sleep timer and fade out|Playback stops at chosen inter
 PLY-07|Player|P1|PLANNED|Seek forward/backward increments|Seek requests stay inside audio duration
 PLY-08|Player|P1|PLANNED|Progress write-back on pause and background|Last committed position survives app restart
 PLY-09|Player|P1|PLANNED|Reconnect after network loss|Player resumes correct byte range without duplicate billing
-PLY-10|Player|P1|PLANNED|Authorized offline download|Expired or revoked license prevents new access as required
+PLY-10|Player|P1|DEMO|Authorized offline download|Expired or revoked license prevents new access as required
 PLY-11|Player|P1|PLANNED|Download queue retry and storage quota|Failed downloads resume without corrupt files
 PLY-12|Player|P1|PLANNED|Accessible transcript synchronized to time|Timestamped transcript follows current playback
 PLY-13|Player|P1|PLANNED|Audio focus interruptions|Phone call pause and resume follow platform policy
 PLY-14|Player|P1|PLANNED|No silent autoplay on opening screen|User initiates playback according to platform policy
-PLY-15|Player|P1|PLANNED|Protected audio URL with short expiry|Unauthorized request denied including cached expired rights
+PLY-15|Player|P1|DEMO|Protected audio URL with short expiry|Unauthorized request denied including cached expired rights
 PLY-16|Player|P2|PLANNED|Audio quality network adaptive|Playback remains stable under slow cellular bandwidth
 PLY-17|Player|P2|PLANNED|Bluetooth and car media integration|Headset controls are usable without touching device
 PLY-18|Player|P2|PLANNED|Offline episode metadata and transcript|All cached media content stays license-scoped
@@ -160,7 +160,7 @@ SEC-05|Security|P0|PLANNED|Untrusted story text prompt injection boundary|Import
 SEC-06|Security|P0|PLANNED|Data minimization and retention schedule|No unnecessary raw voice recordings retained
 SEC-07|Security|P1|DEMO|Privacy notice and deletion workflow|User consent rights data access actionable
 SEC-08|Security|P1|PLANNED|API rate limit and abuse detection|Attack traffic throttled without blocking normal users
-SEC-09|Security|P1|PLANNED|Media entitlement and short signed URLs|Expired subscription cannot mint access URLs
+SEC-09|Security|P1|DEMO|Media entitlement and short signed URLs|Expired subscription cannot mint access URLs
 SEC-10|Security|P1|PLANNED|Secret management and rotation|No API secrets bundled into mobile clients
 SEC-11|Security|P1|PLANNED|Security headers and mobile certificate controls|Critical traffic protected and audited
 SEC-12|Security|P1|DEMO|Tamper evident event and reviewer audit|Published decisions attributable to authorized reviewers

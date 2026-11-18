@@ -146,3 +146,22 @@
 - **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
 - **Risks / unresolved questions:** Media streaming (`/api/v1/audio/{scene_id}.mp3`) still uses unauthenticated sample routes until `T004` adds short-lived signed playback URLs.
 - **Task state and next exact action:** `T003` DONE on `main`. Next task: **T004 — Authenticated media streaming and signed delivery** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue` followed by `.\.venv\Scripts\python.exe scripts/check_repo.py`.
+
+## 2026-11-18 08:25 +07 — T004 Authenticated Media Streaming & Signed Delivery
+- **Branch/commit baseline:** `main` at `2bed004658fb1aaa697b45a7069c65aaf4b1c110` (`origin/main`), clean working tree.
+- **Objective and exact files changed:**
+  - Updated `backend/audioverse/migrations.py` with Migration `003_private_media_registry_entitlements_and_delivery_logs` (`media_objects`, `user_entitlements`, `media_delivery_logs`).
+  - Created `backend/audioverse/media.py` implementing private audio registry sync (`sync_media_registry`), entitlement management (`grant_entitlement`, `revoke_entitlement`), short-lived HMAC-SHA256 signed media token minting (`mint_media_token`, `authorize_playback`), delivery revalidation & byte-range slicing (`deliver_signed_media`), cache epoch invalidation (`invalidate_media_cache`), and redacted delivery logging (`log_media_delivery`).
+  - Updated `backend/audioverse/settings.py` (`allow_public_sample_audio`, `require_entitlement`) and `backend/audioverse/main.py` (`POST /api/v1/playback/authorize`, `GET /api/v1/media/{asset_id}`, `POST /api/v1/admin/media/{asset_id}/invalidate`).
+  - Added 3 comprehensive integration tests in `backend/tests/test_secure_media.py`.
+  - Updated `PLY-10`, `PLY-15`, and `SEC-09` from `PLANNED` to `DEMO` in `docs/product/requirements.psv` and regenerated `docs/product/FUNCTIONAL_SPEC.md`. Updated `docs/engineering/API.md`, `docs/operations/TEST_STRATEGY.md`, `docs/tasks/T004_SECURE_MEDIA.md`, `docs/agent/PROJECT_STATE.md`, `docs/agent/CURRENT_TASK.md`, `docs/agent/BACKLOG.md`, `CHANGELOG.md`, and `SHA256SUMS.txt`.
+- **Decisions / ADR reference:** Implements `ARCHITECTURE.md` invariants #1 and #7 (opaque asset IDs, rights revalidated at publish/authorize/delivery) and `SECURITY_PRIVACY.md` Gate #5 (URL expiry, rights revocation, entitlement revocation, and session logout honored at delivery/renewal).
+- **Tests RUN:**
+  - `.\.venv\Scripts\python.exe -m pytest -v -p no:cacheprovider --basetemp=".venv\pytest_tmp"` => **33 passed, 1 warning**.
+  - `.\.venv\Scripts\python.exe scripts/check_repo.py` => `Integrity PASS: 11 scenes, 182 requirements, assets and agent docs`.
+  - `.\.venv\Scripts\python.exe -m compileall -q backend scripts` => exit 0.
+  - `.\.venv\Scripts\python.exe -m ruff check backend scripts` => `All checks passed!`.
+  - `D:\flutter\bin\flutter.bat analyze` & `D:\flutter\bin\flutter.bat test` (in `mobile/`) => `No issues found!`, **6 passed**.
+- **Tests NOT RUN and why:** Native iOS build/Simulator (requires macOS/Xcode).
+- **Risks / unresolved questions:** Mobile player lifecycle, persistent progress resume, speed/sleep controls, and license-scoped offline download manager are next in `T005`.
+- **Task state and next exact action:** `T004` DONE on `main`. Next task: **T005 — Player lifecycle, offline/resume/background plan** (`READY`). First command: `.\.venv\Scripts\python.exe -m pytest -p no:cacheprovider --basetemp=".venv\pytest_tmp"; Remove-Item -Recurse -Force ".venv\pytest_tmp" -ErrorAction SilentlyContinue`.
